@@ -1,4 +1,3 @@
-let gameState = "swap";
 
 const suits = ['C', 'D', 'H', 'S'];
 const ranks = ['7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
@@ -151,6 +150,7 @@ function initGame() {
 let currentTrick = [];
 
 function playCard(index) {
+    if (gameState !== "play") return;
     const playedCard = playerHand[index];
     currentTrick.push({player: 'you', card: playedCard});
     playerHand.splice(index, 1); // remove from hand
@@ -249,8 +249,7 @@ renderHands = function () {
 }
 
 
-// Global game state
-gameState = "swap";
+let gameState = "swap";
 
 function renderHands() {
     const playerArea = document.getElementById("player-hand");
