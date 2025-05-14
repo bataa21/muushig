@@ -12,6 +12,8 @@
       color: white;
       text-align: center;
       font-family: sans-serif;
+      margin: 0;
+      padding: 20px;
     }
     .card {
       display: inline-block;
@@ -21,9 +23,18 @@
       margin: 5px;
       font-size: 24px;
       border-radius: 6px;
+      cursor: pointer;
     }
     .back {
       background: gray;
+    }
+    button {
+      margin: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+      border: none;
     }
   </style>
 </head>
@@ -36,6 +47,9 @@
     <div id="trump" style="font-size: 28px;">?</div>
     <div style="color: lightgray; font-size: 14px;">Trump</div>
   </div>
+
+  <div id="center" style="white-space: pre-line; margin: 20px 0;"></div>
+  <div id="buttons"></div>
 
   <div id="player-cards"></div>
   <div id="player-label">You (0)</div>
