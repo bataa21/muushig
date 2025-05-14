@@ -1,3 +1,4 @@
+let gameState = "swap";
 
 const suits = ['C', 'D', 'H', 'S'];
 const ranks = ['7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
@@ -248,7 +249,8 @@ renderHands = function () {
 }
 
 
-let gameState = "swap";
+// Global game state
+gameState = "swap";
 
 function renderHands() {
     const playerArea = document.getElementById("player-hand");
