@@ -6,6 +6,7 @@ let playerHand = [];
 let botHand = [];
 let trumpCard = '';
 let remainingDeck = [];
+let selectedIndexes = [];
 
 function buildDeck() {
     deck = [];
@@ -39,13 +40,18 @@ function renderHands() {
     playerArea.innerHTML = '';
     botArea.innerHTML = '';
 
-    for (let card of playerHand) {
+    // Render player cards
+    for (let i = 0; i < playerHand.length; i++) {
+        const card = playerHand[i];
         const img = document.createElement("img");
         img.src = `cards/${card}.png`;
         img.className = "card";
+        img.style.border = selectedIndexes.includes(i) ? "3px solid yellow" : "none";
+        img.onclick = () => toggleSelect(i);
         playerArea.appendChild(img);
     }
 
+    // Render bot card backs
     for (let i = 0; i < 5; i++) {
         const img = document.createElement("img");
         img.src = "cards/card-back.png";
@@ -57,11 +63,38 @@ function renderHands() {
     deckImg.src = "cards/card-back.png";
 }
 
+function toggleSelect(index) {
+    if (selectedIndexes.includes(index)) {
+        selectedIndexes = selectedIndexes.filter(i => i !== index);
+    } else {
+        if (selectedIndexes.length < 5) {
+            selectedIndexes.push(index);
+        }
+    }
+    renderHands();
+}
+
+function swapSelectedCards() {
+    for (let i of selectedIndexes) {
+        if (remainingDeck.length > 0) {
+            const newCard = remainingDeck.shift();
+            playerHand[i] = newCard;
+        }
+    }
+    selectedIndexes = [];
+    renderHands();
+}
+
 function initGame() {
     buildDeck();
     shuffleDeck();
     dealCards();
     renderHands();
+
+    const swapButton = document.querySelector("button#swap-btn");
+    if (swapButton) {
+        swapButton.onclick = swapSelectedCards;
+    }
 }
 
 window.onload = initGame;
