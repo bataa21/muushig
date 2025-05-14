@@ -1,0 +1,69 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: green;
+  font-family: sans-serif;
+}
+#table {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+.player {
+  position: absolute;
+  padding: 10px 20px;
+  background-color: rgba(255, 255, 255, 0.85);
+  border-radius: 12px;
+  text-align: center;
+  font-weight: bold;
+}
+#player-top {
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+#player-bottom {
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+#center-area {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+#deck, #trump-card {
+  font-size: 40px;
+  display: inline-block;
+  margin: 10px;
+}
+.hand {
+  margin-top: 10px;
+  font-size: 28px;
+  letter-spacing: 8px;
+}
+#flying-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 32px;
+  pointer-events: none;
+  opacity: 0;
+  transition: all 0.5s ease;
+}
+#round-play {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+  font-size: 30px;
+}
+#played-by-player, #played-by-bot {
+  min-width: 60px;
+  text-align: center;
+  background-color: white;
+  padding: 8px;
+  border-radius: 8px;
+}
