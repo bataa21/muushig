@@ -1,32 +1,45 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Muushig 2-Player</title>
+  <title>Muushig Card Game</title>
   <link rel="stylesheet" href="muushig.css" />
+  <style>
+    body {
+      background-color: green;
+      color: white;
+      text-align: center;
+      font-family: sans-serif;
+    }
+    .card {
+      display: inline-block;
+      background: white;
+      color: black;
+      padding: 10px 14px;
+      margin: 5px;
+      font-size: 24px;
+      border-radius: 6px;
+    }
+    .back {
+      background: gray;
+    }
+  </style>
 </head>
 <body>
-  <div id="table">
-    <div class="player" id="player-top">
-      Bot (<span id="bot-score">0</span>)
-      <div class="hand bot-hand"></div>
-    </div>
-    <div id="center-area">
-      <div id="deck">🂠</div>
-      <div id="trump-card">?</div>
-      <div id="flying-card">🂠</div>
-      <div id="round-play">
-        <div id="played-by-player"></div>
-        <div id="played-by-bot"></div>
-      </div>
-    </div>
-    <div class="player" id="player-bottom">
-      You (<span id="player-score">0</span>)
-      <div class="hand player-hand"></div>
-    </div>
+  <h2>Muushig 🃏</h2>
+  <div id="bot-label">Bot (0)</div>
+  <div id="bot-cards"></div>
+
+  <div style="margin: 30px 0;">
+    <div id="trump" style="font-size: 28px;">?</div>
+    <div style="color: lightgray; font-size: 14px;">Trump</div>
   </div>
-  <audio id="shuffleSound" src="shuffle.wav" preload="auto"></audio>
+
+  <div id="player-cards"></div>
+  <div id="player-label">You (0)</div>
+
   <script src="muushig.js"></script>
 </body>
 </html>
