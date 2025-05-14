@@ -5,13 +5,17 @@
   <meta charset="UTF-8">
   <title>Муушиг - 2 Player</title>
   <style>
-    body {
+    html, body {
+      height: 100%;
       background-color: green;
       color: white;
       font-family: sans-serif;
       text-align: center;
       margin: 0;
       padding: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
     .card {
@@ -37,7 +41,7 @@
     }
 
     #player-area {
-      margin-top: 60px; /* moved player's hand lower */
+      margin-bottom: 20px; /* now near the bottom of the screen */
     }
 
     button {
