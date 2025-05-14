@@ -246,3 +246,68 @@ renderHands = function () {
     trumpImg.src = `cards/${trumpCard}.png`;
     deckImg.src = "cards/card-back.png";
 }
+
+
+let gameState = "swap";
+
+function renderHands() {
+    const playerArea = document.getElementById("player-hand");
+    const botArea = document.getElementById("bot-hand");
+    const trumpImg = document.getElementById("trump-card");
+    const deckImg = document.getElementById("deck-card");
+
+    playerArea.innerHTML = '';
+    botArea.innerHTML = '';
+
+    for (let i = 0; i < playerHand.length; i++) {
+        const card = playerHand[i];
+        const img = document.createElement("img");
+        img.src = `cards/${card}.png`;
+        img.className = "card";
+
+        if (gameState === "swap") {
+            img.onclick = () => toggleSelect(i);
+            img.style.border = selectedIndexes.includes(i) ? "3px solid yellow" : "none";
+        } else {
+            img.onclick = () => playCard(i);
+            img.style.border = "none";
+        }
+
+        playerArea.appendChild(img);
+    }
+
+    for (let i = 0; i < botHand.length; i++) {
+        const img = document.createElement("img");
+        img.src = "cards/card-back.png";
+        img.className = "card";
+        botArea.appendChild(img);
+    }
+
+    trumpImg.src = `cards/${trumpCard}.png`;
+    deckImg.src = "cards/card-back.png";
+}
+
+function completeSwapPhase() {
+    swapSelectedCards();      // Player finalizes their swap
+    botSwapAndTakeTrump();    // Bot does its swap + trump
+    gameState = "play";       // Switch to play phase
+    renderHands();            // Re-render with play mode
+}
+
+// Update initGame to bind completeSwapPhase to TOGLO button
+function initGame() {
+    buildDeck();
+    shuffleDeck();
+    dealCards();
+    renderHands();
+
+    const swapButton = document.querySelector("button#swap-btn");
+    if (swapButton) {
+        swapButton.onclick = swapSelectedCards;
+    }
+
+    const playButton = document.querySelector("button#play-btn");
+    if (playButton) {
+        playButton.onclick = completeSwapPhase;
+    }
+}
