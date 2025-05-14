@@ -3,7 +3,7 @@
 <html lang="mn">
 <head>
   <meta charset="UTF-8">
-  <title>Муушиг - Layout Test</title>
+  <title>Муушиг - 2 Player</title>
   <style>
     body {
       background-color: green;
@@ -13,16 +13,11 @@
       margin: 0;
       padding: 0;
     }
-    #bot-area, #player-area {
-      margin: 20px;
-    }
     .card {
       width: 60px;
       height: auto;
       margin: 2px;
-    }
-    #center-area {
-      margin: 30px 0;
+      cursor: pointer;
     }
     button {
       margin: 10px;
@@ -36,38 +31,28 @@
       margin-top: 5px;
     }
   </style>
-  <script src="muushig.js"></script>
 </head>
 <body>
+
   <div id="bot-area">
-    <div><img class="card" src="cards/card-back.png">
-         <img class="card" src="cards/card-back.png">
-         <img class="card" src="cards/card-back.png">
-         <img class="card" src="cards/card-back.png">
-         <img class="card" src="cards/card-back.png"></div>
+    <div id="bot-hand"></div>
     <div id="labels">Анжу</div>
   </div>
 
   <div id="center-area">
-    <img class="card" src="cards/card-back.png" style="transform: rotate(-10deg);">
-    <img class="card" src="cards/9H.png" style="transform: rotate(10deg);">
+    <img id="deck-card" class="card" style="transform: rotate(-10deg);">
+    <img id="trump-card" class="card" style="transform: rotate(10deg);">
     <div>
       <button style="background-color: darkgreen; color: white;">ТОГЛО</button>
-     
       <button id="swap-btn" style="background-color: lightgreen;">СОЛИХ</button>
     </div>
   </div>
 
   <div id="player-area">
-    <div>
-      <img class="card" src="cards/8C.png">
-      <img class="card" src="cards/AS.png">
-      <img class="card" src="cards/QH.png">
-      <img class="card" src="cards/7D.png">
-      <img class="card" src="cards/KC.png">
-    </div>
+    <div id="player-hand"></div>
     <div id="labels">Бямбаа</div>
   </div>
-   <script src="muushig.js"></script>
+
+  <script src="muushig.js"></script>
 </body>
 </html>
