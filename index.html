@@ -3,83 +3,91 @@
 <html lang="mn">
 <head>
   <meta charset="UTF-8">
-  <title>Муушиг - 2 Player</title>
+  <title>Муушиг 2 тоглогч</title>
   <style>
-    html, body {
-      height: 100%;
+    body {
       background-color: green;
-      color: white;
-      font-family: sans-serif;
-      text-align: center;
       margin: 0;
       padding: 0;
+      font-family: sans-serif;
+      color: white;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      height: 100vh;
     }
-
     .card {
       width: 80px;
-      height: auto;
-      margin: 6px;
+      margin: 5px;
       cursor: pointer;
     }
-
-    #bot-area, #player-area {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    #bot-hand, #player-hand {
+    #top-row, #center-row, #bottom-row {
       display: flex;
       justify-content: center;
+      align-items: center;
     }
-
-    #center-area {
-      margin: 20px 0;
+    #top-row {
+      margin-top: 10px;
     }
-
-    #player-area {
-      margin-bottom: 20px; /* now near the bottom of the screen */
+    #center-row {
+      flex-direction: column;
     }
-
-    button {
+    #deck-area {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       margin: 10px;
-      padding: 12px 24px;
-      font-size: 18px;
+    }
+    #deck-area img {
+      margin: 0 -30px;
+    }
+    #buttons {
+      margin-top: 8px;
+    }
+    button {
+      font-size: 16px;
       font-weight: bold;
+      padding: 10px 20px;
+      margin: 5px;
       cursor: pointer;
     }
-
-    #labels {
+    .label {
       font-size: 14px;
       color: yellow;
-      margin-top: 5px;
+      margin: 5px 0;
     }
   </style>
 </head>
 <body>
 
-  <div id="bot-area">
-    <div id="bot-hand"></div>
-    <div id="labels">Анжу</div>
+  <div id="top-row">
+    <img class="card" src="cards/card-back.png">
+    <img class="card" src="cards/card-back.png">
+    <img class="card" src="cards/card-back.png">
+    <img class="card" src="cards/card-back.png">
+    <img class="card" src="cards/card-back.png">
   </div>
+  <div class="label">Анжу</div>
 
-  <div id="center-area">
-    <img id="deck-card" class="card" style="transform: rotate(-10deg);">
-    <img id="trump-card" class="card" style="transform: rotate(10deg);">
-    <div>
-      <button id="play-btn" style="background-color: darkgreen; color: white;">ТОГЛО</button>
-      <button id="swap-btn" style="background-color: lightgreen;">СОЛИХ</button>
+  <div id="center-row">
+    <div id="deck-area">
+      <img class="card" src="cards/card-back.png" style="transform: rotate(-10deg);">
+      <img class="card" src="cards/QS.png" style="transform: rotate(10deg);">
+    </div>
+    <div id="buttons">
+      <button style="background-color: darkgreen; color: white;">ТОГЛО</button>
+      <button style="background-color: lightgreen;">СОЛИХ</button>
     </div>
   </div>
 
-  <div id="player-area">
-    <div id="player-hand"></div>
-    <div id="labels">Бямбаа</div>
+  <div id="bottom-row">
+    <img class="card" src="cards/7H.png">
+    <img class="card" src="cards/KD.png">
+    <img class="card" src="cards/9C.png">
+    <img class="card" src="cards/10C.png">
+    <img class="card" src="cards/JD.png">
   </div>
+  <div class="label">Бямбаа</div>
 
-  <script src="swap_phase.js"></script>
 </body>
 </html>
