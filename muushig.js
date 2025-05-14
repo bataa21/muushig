@@ -145,3 +145,104 @@ function initGame() {
         playButton.onclick = botSwapAndTakeTrump;
     }
 }
+
+
+let currentTrick = [];
+
+function playCard(index) {
+    const playedCard = playerHand[index];
+    currentTrick.push({player: 'you', card: playedCard});
+    playerHand.splice(index, 1); // remove from hand
+    renderHands();
+    setTimeout(() => botRespond(playedCard), 500);
+}
+
+function botRespond(playerCard) {
+    const playerSuit = playerCard.slice(-1);
+    const playerRank = playerCard.slice(0, -1);
+
+    let sameSuitCards = botHand.filter(c => c.endsWith(playerSuit));
+    let trumpSuit = trumpCard.slice(-1);
+    let trumpCards = botHand.filter(c => c.endsWith(trumpSuit));
+    let chosenCard = null;
+
+    // Try to beat player's card with same suit, higher
+    if (sameSuitCards.length > 0) {
+        sameSuitCards.sort((a, b) => cardValue(b) - cardValue(a));
+        let higherCards = sameSuitCards.filter(c => cardValue(c) > cardValue(playerCard));
+        if (higherCards.length > 0) {
+            chosenCard = higherCards[0];
+        } else {
+            chosenCard = sameSuitCards[sameSuitCards.length - 1]; // give lowest same suit
+        }
+    } else if (trumpCards.length > 0) {
+        trumpCards.sort((a, b) => cardValue(b) - cardValue(a));
+        chosenCard = trumpCards[0]; // play strongest trump
+    } else {
+        botHand.sort((a, b) => cardValue(a) - cardValue(b));
+        chosenCard = botHand[0]; // give weakest card
+    }
+
+    const botIndex = botHand.indexOf(chosenCard);
+    botHand.splice(botIndex, 1);
+    currentTrick.push({player: 'bot', card: chosenCard});
+    renderHands();
+
+    setTimeout(() => showTrickResult(), 800);
+}
+
+function showTrickResult() {
+    const p = currentTrick[0];
+    const b = currentTrick[1];
+    let winner = determineWinner(p.card, b.card);
+    alert(winner === 'you' ? 'Та хожлоо!' : 'Бот хожлоо!');
+    currentTrick = [];
+}
+
+function determineWinner(card1, card2) {
+    const suit1 = card1.slice(-1);
+    const suit2 = card2.slice(-1);
+    const trump = trumpCard.slice(-1);
+
+    if (suit1 === suit2) {
+        return cardValue(card1) > cardValue(card2) ? 'you' : 'bot';
+    } else if (suit2 === trump) {
+        return 'bot';
+    } else {
+        return 'you';
+    }
+}
+
+// Modify renderHands to allow card clicks to play
+const originalRender = renderHands;
+renderHands = function () {
+    const playerArea = document.getElementById("player-hand");
+    const botArea = document.getElementById("bot-hand");
+    const trumpImg = document.getElementById("trump-card");
+    const deckImg = document.getElementById("deck-card");
+
+    playerArea.innerHTML = '';
+    botArea.innerHTML = '';
+
+    for (let i = 0; i < playerHand.length; i++) {
+        const card = playerHand[i];
+        const img = document.createElement("img");
+        img.src = `cards/${card}.png`;
+        img.className = "card";
+        img.onclick = () => playCard(i);
+        if (selectedIndexes.includes(i)) {
+            img.style.border = "3px solid yellow";
+        }
+        playerArea.appendChild(img);
+    }
+
+    for (let i = 0; i < botHand.length; i++) {
+        const img = document.createElement("img");
+        img.src = "cards/card-back.png";
+        img.className = "card";
+        botArea.appendChild(img);
+    }
+
+    trumpImg.src = `cards/${trumpCard}.png`;
+    deckImg.src = "cards/card-back.png";
+}
