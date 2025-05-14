@@ -98,3 +98,50 @@ function initGame() {
 }
 
 window.onload = initGame;
+
+
+function botSwapAndTakeTrump() {
+    // Step 1: Bot randomly selects 2-4 cards to swap
+    let numToSwap = Math.min(remainingDeck.length, Math.floor(Math.random() * 4) + 1);
+    for (let i = 0; i < numToSwap; i++) {
+        if (remainingDeck.length > 0) {
+            botHand[i] = remainingDeck.shift();
+        }
+    }
+
+    // Step 2: Bot takes trump card, replaces weakest card
+    let lowestIndex = 0;
+    for (let i = 1; i < botHand.length; i++) {
+        if (cardValue(botHand[i]) < cardValue(botHand[lowestIndex])) {
+            lowestIndex = i;
+        }
+    }
+    botHand[lowestIndex] = trumpCard;
+
+    renderHands();
+}
+
+// Utility to evaluate card strength for trump pickup
+function cardValue(card) {
+    const rankOrder = {'7':1, '8':2, '9':3, '10':4, 'J':5, 'Q':6, 'K':7, 'A':8};
+    let rank = card.slice(0, -1);
+    return rankOrder[rank] || 0;
+}
+
+// Link bot swap to "Play" button for now
+function initGame() {
+    buildDeck();
+    shuffleDeck();
+    dealCards();
+    renderHands();
+
+    const swapButton = document.querySelector("button#swap-btn");
+    if (swapButton) {
+        swapButton.onclick = swapSelectedCards;
+    }
+
+    const playButton = document.querySelector("button#play-btn");
+    if (playButton) {
+        playButton.onclick = botSwapAndTakeTrump;
+    }
+}
