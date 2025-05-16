@@ -128,5 +128,36 @@
             }
         }
     </script>
+
+<script>
+  const dealButton = document.getElementById("dealBtn");
+  const trumpButton = document.getElementById("trumpBtn");
+  const trumpCard = document.getElementById("trumpCard");
+  const playerCards = document.querySelectorAll(".player-card");
+  const botCards = document.querySelectorAll(".bot-card");
+
+  trumpButton.addEventListener("click", () => {
+    trumpCard.style.transform = "rotateY(180deg)";
+  });
+
+  dealButton.addEventListener("click", () => {
+    let delay = 0;
+    botCards.forEach((card, i) => {
+      setTimeout(() => {
+        card.style.opacity = 1;
+        card.style.transform = "translateY(0)";
+      }, delay);
+      delay += 300;
+    });
+    playerCards.forEach((card, i) => {
+      setTimeout(() => {
+        card.style.opacity = 1;
+        card.style.transform = "translateY(0)";
+      }, delay);
+      delay += 300;
+    });
+  });
+</script>
 </body>
+
 </html>
