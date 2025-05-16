@@ -3,7 +3,7 @@
 <html lang="mn">
 <head>
     <meta charset="UTF-8">
-    <title>Muushig Layout</title>
+    <title>Muushig Animated</title>
     <style>
         body {
             background-color: green;
@@ -37,6 +37,7 @@
             align-items: center;
             gap: 8px;
             margin: 20px 0;
+            position: relative;
         }
         .buttons {
             display: flex;
@@ -46,6 +47,7 @@
         .card {
             width: 80px;
             height: auto;
+            transition: transform 0.5s ease;
         }
         .label {
             color: yellow;
@@ -63,13 +65,15 @@
         button:hover {
             background-color: forestgreen;
         }
+        .flip {
+            transform: rotateY(180deg);
+        }
     </style>
 </head>
 <body>
     <div class="bot-area">
-        <!-- Bot hand -->
         <div class="hand bot-hand">
-            <div class="hand-row">
+            <div class="hand-row" id="bot-hand">
                 <img src="cards/card-back.png" class="card">
                 <img src="cards/card-back.png" class="card">
                 <img src="cards/card-back.png" class="card">
@@ -79,21 +83,18 @@
             <div class="label">Анжу</div>
         </div>
 
-        <!-- Deck and Trump -->
         <div class="deck-area">
-            <img src="cards/card-back.png" class="card">
-            <img src="cards/QS.png" class="card">
+            <img id="deck" src="cards/card-back.png" class="card">
+            <img id="trump" src="cards/QS.png" class="card">
         </div>
 
-        <!-- Buttons -->
         <div class="buttons">
-            <button>ТОГЛО</button>
-            <button>СОЛИХ</button>
+            <button onclick="flipTrump()">СОЛИХ</button>
+            <button onclick="dealCards()">ТОГЛО</button>
         </div>
 
-        <!-- Player hand -->
         <div class="hand player-hand">
-            <div class="hand-row">
+            <div class="hand-row" id="player-hand">
                 <img src="cards/7H.png" class="card">
                 <img src="cards/KD.png" class="card">
                 <img src="cards/9C.png" class="card">
@@ -103,5 +104,29 @@
             <div class="label">Бямбаа</div>
         </div>
     </div>
+
+    <script>
+        function flipTrump() {
+            const trump = document.getElementById("trump");
+            trump.classList.toggle("flip");
+        }
+
+        function dealCards() {
+            const playerHand = document.getElementById("player-hand").children;
+            const botHand = document.getElementById("bot-hand").children;
+
+            for (let i = 0; i < playerHand.length; i++) {
+                setTimeout(() => {
+                    playerHand[i].style.transform = "translateY(-10px)";
+                    botHand[i].style.transform = "translateY(10px)";
+                }, 100 * i);
+
+                setTimeout(() => {
+                    playerHand[i].style.transform = "translateY(0)";
+                    botHand[i].style.transform = "translateY(0)";
+                }, 100 * i + 500);
+            }
+        }
+    </script>
 </body>
 </html>
