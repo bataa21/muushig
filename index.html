@@ -163,6 +163,51 @@
     });
   });
 </script>
+
+<script>
+  let playerTurn = true;
+
+  function setupCardPlay() {
+    const playerCards = document.querySelectorAll(".player-card");
+    const botCards = document.querySelectorAll(".bot-card");
+
+    playerCards.forEach((card, index) => {
+      card.addEventListener("click", () => {
+        if (!playerTurn || card.classList.contains("played")) return;
+
+        card.classList.add("played");
+        card.style.border = "3px solid gold";
+
+        const botCard = selectBotCardToPlay();
+        botCard.classList.add("played");
+        botCard.style.border = "3px solid red";
+
+        const winner = determineWinner(card, botCard);
+        setTimeout(() => alert(winner + " хожно!"), 600);
+
+        playerTurn = false;
+      });
+    });
+  }
+
+  function selectBotCardToPlay() {
+    const botCards = document.querySelectorAll(".bot-card:not(.played)");
+    return botCards[Math.floor(Math.random() * botCards.length)];
+  }
+
+  function determineWinner(playerCard, botCard) {
+    const values = {'7':1,'8':2,'9':3,'10':4,'J':5,'Q':6,'K':7,'A':8};
+    const pVal = values[playerCard.dataset.rank];
+    const bVal = values[botCard.dataset.rank];
+
+    return pVal >= bVal ? "Тоглогч" : "Бот";
+  }
+
+  window.onload = () => {
+    setupCardPlay();
+  };
+</script>
+
 </body>
 
 </html>
