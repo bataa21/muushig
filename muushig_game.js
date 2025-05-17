@@ -4,7 +4,7 @@ let playerScore = 15;
 let botScore = 15;
 let playerTricksWon = 0;
 let botTricksWon = 0;
-let trumpSuit = "H"; // default trump suit, update as needed
+let trumpSuit = "H"; // default trump suit
 let currentPlayerTurn = "player";
 
 const scoreDisplayPlayer = document.getElementById("score-player");
@@ -12,6 +12,7 @@ const scoreDisplayBot = document.getElementById("score-bot");
 const playArea = document.getElementById("play-area");
 const playerHandDiv = document.getElementById("player-hand");
 const botHandDiv = document.getElementById("bot-hand");
+const deck = [];
 
 function updateScores() {
     scoreDisplayPlayer.textContent = `Тоглогч: ${playerScore}`;
@@ -67,7 +68,12 @@ function checkRoundEnd() {
 function resetRound() {
     playerTricksWon = 0;
     botTricksWon = 0;
-    // TODO: Add new deal logic
+    playArea.innerHTML = "";
+    playerHandDiv.innerHTML = "";
+    botHandDiv.innerHTML = "";
+    shuffleDeck();
+    dealHands();
+    setupCardClicks();
 }
 
 function disableGame() {
@@ -81,6 +87,47 @@ function cardFromElement(el) {
         rank: parseInt(tag.slice(0, -1)),
         element: el
     };
+}
+
+function createCardElement(card) {
+    const img = document.createElement("img");
+    img.src = `cards/${card}.png`;
+    img.className = "card";
+    img.setAttribute("data-tag", card);
+    return img;
+}
+
+function shuffleDeck() {
+    deck.length = 0;
+    const suits = ["S", "H", "D", "C"];
+    const ranks = [7, 8, 9, 10, 11, 12, 13, 14]; // 11=J, 12=Q, 13=K, 14=A
+    for (const suit of suits) {
+        for (const rank of ranks) {
+            deck.push(`${rank}${suit}`);
+        }
+    }
+    for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+}
+
+function dealHands() {
+    const playerHand = deck.splice(0, 5);
+    const botHand = deck.splice(0, 5);
+    const trumpCard = deck.splice(0, 1)[0];
+    trumpSuit = trumpCard[trumpCard.length - 1];
+
+    document.getElementById("trump-card").src = `cards/${trumpCard}.png`;
+
+    for (const card of playerHand) {
+        const el = createCardElement(card);
+        playerHandDiv.appendChild(el);
+    }
+    for (const card of botHand) {
+        const el = createCardElement("card-back");
+        botHandDiv.appendChild(el);
+    }
 }
 
 function botPlay(playerCard) {
@@ -109,5 +156,7 @@ function setupCardClicks() {
     });
 }
 
+shuffleDeck();
+dealHands();
 setupCardClicks();
 updateScores();
