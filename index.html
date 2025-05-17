@@ -81,7 +81,7 @@
 
   <div id="controls">
     <button class="btn" onclick="startGame()">ТОГЛО</button>
-    <button class="btn" onclick="swapCards()">СОЛИХ</button>
+    <button class="btn" id="swapBtn" onclick="swapCards()">СОЛИХ</button>
     <button class="btn" onclick="resetRound()">ШИНЭ</button>
   </div>
 
@@ -97,8 +97,8 @@
     let trumpCard = '';
     let playerScore = 15;
     let botScore = 15;
-    let selectedIndices = [];
     let currentTrick = 0;
+    let swapped = false;
 
     function getRandomCardDeck() {
       const fullDeck = [];
@@ -125,7 +125,9 @@
       botHand = deck.splice(0, 5);
       trumpCard = deck.pop();
       currentTrick = 0;
+      swapped = false;
       document.getElementById('trump-card').src = `cards/${trumpCard}.png`;
+      document.getElementById('swapBtn').disabled = false;
       drawHands();
     }
 
@@ -152,11 +154,14 @@
     }
 
     function swapCards() {
+      if (swapped) return;
       for (let i = 0; i < playerHand.length; i++) {
         if (deck.length > 0) {
           playerHand[i] = deck.pop();
         }
       }
+      swapped = true;
+      document.getElementById('swapBtn').disabled = true;
       drawHands();
     }
 
@@ -225,7 +230,6 @@
     function resetRound() {
       playerHand = [];
       botHand = [];
-      selectedIndices = [];
       document.getElementById('player-hand').innerHTML = '';
       document.getElementById('bot-hand').innerHTML = '';
       document.getElementById('play-area').innerHTML = '';
@@ -234,4 +238,3 @@
   </script>
 </body>
 </html>
-<!-- Full working index.html will go here (reinserted from memory) -->
