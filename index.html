@@ -1,1 +1,237 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8">
+  <title>Муушиг</title>
+  <style>
+    body {
+      background-color: green;
+      color: yellow;
+      font-family: sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    #top {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 40px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    #trump-area {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 10px 0;
+    }
+    #deck-card {
+      transform: rotate(-15deg);
+      margin-right: -40px;
+    }
+    #play-area {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 120px;
+      margin: 10px;
+    }
+    #bot-hand, #player-hand {
+      display: flex;
+      justify-content: center;
+      margin: 10px 0;
+      min-height: 100px;
+    }
+    .card {
+      width: 70px;
+      height: auto;
+      margin: 5px;
+      cursor: pointer;
+    }
+    .selected {
+      border: 3px solid yellow;
+    }
+    #controls {
+      margin: 15px;
+    }
+    .btn {
+      background: white;
+      color: black;
+      font-weight: bold;
+      padding: 8px 16px;
+      margin: 5px;
+      cursor: pointer;
+      border: none;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div id="top">
+    <div id="score-player">Тоглогч: 15</div>
+    <div id="score-bot">Бот: 15</div>
+  </div>
+
+  <div id="trump-area">
+    <img id="deck-card" class="card" src="cards/card-back.png" alt="Deck">
+    <img id="trump-card" class="card" src="cards/7H.png" alt="Trump">
+  </div>
+
+  <div id="play-area"></div>
+
+  <div id="controls">
+    <button class="btn" onclick="startGame()">ТОГЛО</button>
+    <button class="btn" onclick="swapCards()">СОЛИХ</button>
+    <button class="btn" onclick="resetRound()">ШИНЭ</button>
+  </div>
+
+  <div id="bot-hand"></div>
+  <div id="player-hand"></div>
+
+  <script>
+    const suits = ['H', 'D', 'S', 'C'];
+    const ranks = ['7','8','9','10','J','Q','K','A'];
+    let playerHand = [];
+    let botHand = [];
+    let deck = [];
+    let trumpCard = '';
+    let playerScore = 15;
+    let botScore = 15;
+    let selectedIndices = [];
+    let currentTrick = 0;
+
+    function getRandomCardDeck() {
+      const fullDeck = [];
+      for (let s of suits) {
+        for (let r of ranks) {
+          fullDeck.push(r + s);
+        }
+      }
+      for (let i = fullDeck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [fullDeck[i], fullDeck[j]] = [fullDeck[j], fullDeck[i]];
+      }
+      return fullDeck;
+    }
+
+    function updateScores() {
+      document.getElementById('score-player').innerText = `Тоглогч: ${playerScore}`;
+      document.getElementById('score-bot').innerText = `Бот: ${botScore}`;
+    }
+
+    function startGame() {
+      deck = getRandomCardDeck();
+      playerHand = deck.splice(0, 5);
+      botHand = deck.splice(0, 5);
+      trumpCard = deck.pop();
+      currentTrick = 0;
+      document.getElementById('trump-card').src = `cards/${trumpCard}.png`;
+      drawHands();
+    }
+
+    function drawHands() {
+      const playerDiv = document.getElementById('player-hand');
+      const botDiv = document.getElementById('bot-hand');
+      playerDiv.innerHTML = '';
+      botDiv.innerHTML = '';
+
+      playerHand.forEach((card, index) => {
+        const img = document.createElement('img');
+        img.src = `cards/${card}.png`;
+        img.className = 'card';
+        img.onclick = () => playCard(index);
+        playerDiv.appendChild(img);
+      });
+
+      botHand.forEach(card => {
+        const img = document.createElement('img');
+        img.src = 'cards/card-back.png';
+        img.className = 'card';
+        botDiv.appendChild(img);
+      });
+    }
+
+    function swapCards() {
+      for (let i = 0; i < playerHand.length; i++) {
+        if (deck.length > 0) {
+          playerHand[i] = deck.pop();
+        }
+      }
+      drawHands();
+    }
+
+    function playCard(index) {
+      const playerCard = playerHand.splice(index, 1)[0];
+      const playerSuit = playerCard.slice(-1);
+      const playerValue = ranks.indexOf(playerCard.slice(0, -1));
+
+      let botIndex = botHand.findIndex(c => c.slice(-1) === playerSuit && ranks.indexOf(c.slice(0, -1)) > playerValue);
+      if (botIndex === -1) botIndex = botHand.findIndex(c => c.slice(-1) === trumpCard.slice(-1));
+      if (botIndex === -1) botIndex = 0;
+
+      const botCard = botHand.splice(botIndex, 1)[0];
+      const botValue = ranks.indexOf(botCard.slice(0, -1));
+      const botSuit = botCard.slice(-1);
+
+      showPlayedCards(playerCard, botCard);
+
+      let winner = '';
+      if (botSuit === playerSuit && botValue > playerValue) winner = 'bot';
+      else if (botSuit === playerSuit && botValue < playerValue) winner = 'player';
+      else if (botSuit === trumpCard.slice(-1)) winner = 'bot';
+      else if (playerSuit === trumpCard.slice(-1)) winner = 'player';
+      else winner = 'player';
+
+      if (winner === 'player') botScore--;
+      else playerScore--;
+
+      updateScores();
+      currentTrick++;
+
+      setTimeout(() => {
+        document.getElementById('play-area').innerHTML = '';
+        drawHands();
+        checkGameOver();
+      }, 2000);
+    }
+
+    function showPlayedCards(playerCard, botCard) {
+      const area = document.getElementById('play-area');
+      area.innerHTML = '';
+
+      const pImg = document.createElement('img');
+      pImg.src = `cards/${playerCard}.png`;
+      pImg.className = 'card';
+      const bImg = document.createElement('img');
+      bImg.src = `cards/${botCard}.png`;
+      bImg.className = 'card';
+
+      area.appendChild(bImg);
+      area.appendChild(pImg);
+    }
+
+    function checkGameOver() {
+      if (playerScore <= 0 || playerScore <= -4) {
+        alert('🎉 Тоглогч ялав!');
+        resetRound();
+      } else if (botScore <= 0 || botScore <= -4) {
+        alert('🤖 Бот ялав!');
+        resetRound();
+      } else if (currentTrick >= 5) {
+        startGame();
+      }
+    }
+
+    function resetRound() {
+      playerHand = [];
+      botHand = [];
+      selectedIndices = [];
+      document.getElementById('player-hand').innerHTML = '';
+      document.getElementById('bot-hand').innerHTML = '';
+      document.getElementById('play-area').innerHTML = '';
+      updateScores();
+    }
+  </script>
+</body>
+</html>
 <!-- Full working index.html will go here (reinserted from memory) -->
