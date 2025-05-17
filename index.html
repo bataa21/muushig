@@ -1,156 +1,66 @@
-
 <!DOCTYPE html>
 <html lang="mn">
 <head>
-  <meta charset="UTF-8">
-  <title>Муушиг 2 тоглогч</title>
+  <meta charset="UTF-8" />
+  <title>Muushig Game</title>
+  <link rel="stylesheet" href="muushig.css">
   <style>
     body {
       background-color: green;
-      margin: 0;
-      padding: 0;
       font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      height: 100vh;
+      color: yellow;
+      text-align: center;
+    }
+    #bot-area, #player-area {
+      margin: 20px;
     }
     .card {
-      width: 72px;
-      height: auto;
+      width: 80px;
       margin: 5px;
-      transition: transform 0.3s ease, opacity 0.3s;
       cursor: pointer;
     }
-    .hand-row {
-      display: flex;
-      justify-content: center;
+    #action-buttons {
+      margin: 20px;
     }
-    .deck-area, .buttons {
-      display: flex;
-      justify-content: center;
-      margin: 10px;
-      gap: 12px;
-    }
-    .label {
-      color: yellow;
-      font-size: 14px;
-      margin: 5px;
-    }
-    .played {
-      opacity: 0.5;
-      pointer-events: none;
-    }
-    .highlight {
-      border: 2px solid gold;
-    }
-    button {
+    #action-buttons button {
+      font-size: 18px;
       padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      background-color: darkgreen;
+      margin: 0 10px;
+      background-color: #104910;
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 5px;
+      cursor: pointer;
     }
-    button:hover {
-      background-color: forestgreen;
-    }
-    @media (max-width: 600px) {
-      .card { width: 50px; }
-      button { font-size: 14px; padding: 8px 16px; }
+    #action-buttons button:hover {
+      background-color: #2a7f2a;
     }
   </style>
 </head>
 <body>
 
-  <div class="hand-row" id="bot-hand"></div>
-  <div class="label">Анжу</div>
-
-  <div class="deck-area">
-    <img id="deck" src="cards/card-back.png" class="card">
-    <img id="trump-card" src="cards/7C.png" class="card">
+  <div id="bot-label">Анжу</div>
+  <div id="bot-area">
+    <div id="bot-hand"></div>
   </div>
 
-  <div class="buttons">
-    <button onclick="resetGame()">Дахин</button>
+  <div id="center">
+    <img id="deck-card" src="cards/card-back.png" class="card" style="transform: rotate(-10deg);">
+    <img id="trump-card" src="cards/QS.png" class="card" style="transform: rotate(10deg);">
   </div>
 
-  <div class="hand-row" id="player-hand"></div>
-  <div class="label">Бямбаа</div>
+  <div id="action-buttons">
+    <button onclick="startPlayPhase()">ТОГЛО</button>
+    <button onclick="startSwapPhase()">СОЛИХ</button>
+  </div>
 
-<script>
-  const playerCards = ["7H", "10D", "QC", "KH", "AD"];
-  const botCards = ["7S", "8D", "9H", "10C", "AS"];
-  const trumpSuit = "C"; // trump is Clubs
+  <div id="player-area">
+    <div id="player-hand"></div>
+    <div id="player-label">Бямбаа</div>
+  </div>
 
-  function loadHand(containerId, cards, isPlayer) {
-    const container = document.getElementById(containerId);
-    container.innerHTML = "";
-    cards.forEach((cardName, idx) => {
-      const img = document.createElement("img");
-      img.src = "cards/" + cardName + ".png";
-      img.className = "card " + (isPlayer ? "player-card" : "bot-card");
-      img.dataset.rank = getCardValue(cardName);
-      img.dataset.suit = cardName.slice(-1);
-      img.dataset.name = cardName;
-      if (isPlayer) {
-        img.onclick = () => playCard(img);
-      }
-      container.appendChild(img);
-    });
-  }
-
-  function getCardValue(card) {
-    const rank = card.replace(/[CDHS]/, "");
-    return {"7":7,"8":8,"9":9,"10":10,"J":11,"Q":12,"K":13,"A":14}[rank];
-  }
-
-  function playCard(playerCard) {
-    if (playerCard.classList.contains("played")) return;
-
-    playerCard.classList.add("played", "highlight");
-
-    const botCard = selectBotCard(playerCard.dataset.suit, parseInt(playerCard.dataset.rank));
-    botCard.classList.add("played");
-    botCard.style.border = "2px solid red";
-
-    const winner = determineWinner(playerCard, botCard);
-    setTimeout(() => alert(winner + " хожлоо!"), 600);
-  }
-
-  function selectBotCard(playerSuit, playerRank) {
-    const all = [...document.querySelectorAll(".bot-card:not(.played)")];
-    const sameSuit = all.filter(c => c.dataset.suit === playerSuit);
-    const trump = all.filter(c => c.dataset.suit === trumpSuit);
-
-    if (sameSuit.length) {
-      const stronger = sameSuit.find(c => parseInt(c.dataset.rank) > playerRank);
-      return stronger || sameSuit[0];
-    } else if (trump.length) {
-      return trump[0];
-    } else {
-      return all.sort((a,b) => a.dataset.rank - b.dataset.rank)[0];
-    }
-  }
-
-  function determineWinner(p, b) {
-    const ps = p.dataset.suit, bs = b.dataset.suit;
-    const pr = parseInt(p.dataset.rank), br = parseInt(b.dataset.rank);
-
-    if (ps === bs) return pr >= br ? "Тоглогч" : "Бот";
-    if (bs === trumpSuit) return "Бот";
-    return "Тоглогч";
-  }
-
-  function resetGame() {
-    loadHand("player-hand", playerCards, true);
-    loadHand("bot-hand", botCards, false);
-  }
-
-  window.onload = resetGame;
-</script>
-
+  <script src="muushig.js"></script>
+  <script src="swap_phase.js"></script>
+  <script src="play_phase.js"></script>
 </body>
 </html>
