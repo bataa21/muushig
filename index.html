@@ -12,82 +12,44 @@
       padding: 0;
       text-align: center;
     }
-    .score {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px 20px;
-      font-weight: bold;
-    }
-    #bot-hand, #player-hand {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin: 20px auto;
-    }
-    #center-area {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-    }
-    #deck-stack {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    #deck-card {
-      transform: rotate(-15deg);
-    }
-    #trump-card {
-      margin-left: -20px;
-      z-index: 1;
-    }
-    .buttons {
-      margin: 10px;
-    }
-    .buttons button {
-      margin: 0 10px;
-      font-size: 16px;
-      padding: 10px 20px;
-      cursor: pointer;
-    }
     .card {
       width: 70px;
+      margin: 5px;
+    }
+    .scoreboard {
+      display: flex;
+      justify-content: space-around;
+      padding: 10px;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    .hand-row, #play-area {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 15px 0;
+    }
+    #trump-area {
+      margin: 10px;
     }
   </style>
 </head>
 <body>
-  <div class="score">
-    <div>Тоглогч: <span id="player-score">15</span></div>
-    <div>Бот: <span id="bot-score">15</span></div>
+  <div class="scoreboard">
+    <div id="score-player">Тоглогч: 15</div>
+    <div id="score-bot">Бот: 15</div>
   </div>
 
-  <div id="bot-hand">
-    <img src="cards/card-back.png" class="card">
-    <img src="cards/card-back.png" class="card">
-    <img src="cards/card-back.png" class="card">
-    <img src="cards/card-back.png" class="card">
-    <img src="cards/card-back.png" class="card">
+  <div id="trump-area">
+    <img id="trump-card" class="card" src="cards/7H.png" alt="Trump Card">
   </div>
 
-  <div id="center-area">
-    <div id="deck-stack">
-      <img src="cards/card-back.png" class="card" id="deck-card">
-      <img src="cards/9H.png" class="card" id="trump-card">
-    </div>
-    <div class="buttons">
-      <button id="play-btn">ТОГЛО</button>
-      <button id="swap-btn">СОЛИХ</button>
-      <button id="restart-btn">ДАХИН</button>
-    </div>
-  </div>
+  <div id="bot-hand" class="hand-row"></div>
 
-  <div id="player-hand">
-    <img src="cards/7H.png" class="card">
-    <img src="cards/10D.png" class="card">
-    <img src="cards/QS.png" class="card">
-    <img src="cards/KH.png" class="card">
-    <img src="cards/AD.png" class="card">
-  </div>
+  <div id="play-area"></div>
+
+  <div id="player-hand" class="hand-row"></div>
+
+  <script src="muushig_game.js"></script>
 </body>
 </html>
