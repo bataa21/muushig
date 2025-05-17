@@ -4,17 +4,21 @@ let playerScore = 15;
 let botScore = 15;
 let playerTricksWon = 0;
 let botTricksWon = 0;
+let trumpSuit = "H"; // default trump suit, update as needed
+let currentPlayerTurn = "player";
 
 const scoreDisplayPlayer = document.getElementById("score-player");
 const scoreDisplayBot = document.getElementById("score-bot");
 const playArea = document.getElementById("play-area");
+const playerHandDiv = document.getElementById("player-hand");
+const botHandDiv = document.getElementById("bot-hand");
 
 function updateScores() {
     scoreDisplayPlayer.textContent = `Тоглогч: ${playerScore}`;
     scoreDisplayBot.textContent = `Бот: ${botScore}`;
 }
 
-function resolveTrick(playerCard, botCard, trumpSuit) {
+function resolveTrick(playerCard, botCard) {
     const playerSuit = playerCard.suit;
     const botSuit = botCard.suit;
 
@@ -32,9 +36,11 @@ function resolveTrick(playerCard, botCard, trumpSuit) {
     if (winner === "player") {
         botScore--;
         playerTricksWon++;
+        alert("Тоглогч хожлоо!");
     } else {
         playerScore--;
         botTricksWon++;
+        alert("Бот хожлоо!");
     }
 
     updateScores();
@@ -61,10 +67,47 @@ function checkRoundEnd() {
 function resetRound() {
     playerTricksWon = 0;
     botTricksWon = 0;
-    // Add your reset/deal logic here
+    // TODO: Add new deal logic
 }
 
 function disableGame() {
-    // Disable all game interactions
     document.querySelectorAll(".card").forEach(card => card.onclick = null);
 }
+
+function cardFromElement(el) {
+    const tag = el.getAttribute("data-tag");
+    return {
+        suit: tag[tag.length - 1],
+        rank: parseInt(tag.slice(0, -1)),
+        element: el
+    };
+}
+
+function botPlay(playerCard) {
+    const botCards = Array.from(botHandDiv.querySelectorAll(".card"));
+    let chosen = botCards[0];
+    for (let card of botCards) {
+        if (!chosen || Math.random() > 0.5) chosen = card;
+    }
+    const botCard = cardFromElement(chosen);
+    chosen.remove();
+    playArea.appendChild(botCard.element);
+    resolveTrick(playerCard, botCard);
+    currentPlayerTurn = "player";
+}
+
+function setupCardClicks() {
+    document.querySelectorAll("#player-hand .card").forEach(card => {
+        card.onclick = () => {
+            if (currentPlayerTurn !== "player") return;
+            const playerCard = cardFromElement(card);
+            card.remove();
+            playArea.appendChild(playerCard.element);
+            currentPlayerTurn = "bot";
+            setTimeout(() => botPlay(playerCard), 700);
+        };
+    });
+}
+
+setupCardClicks();
+updateScores();
