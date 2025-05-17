@@ -1,169 +1,147 @@
-// === Muushig 2-Player Round Logic ===
-
+// === Global Variables ===
+let deck = [];
 let playerHand = [];
 let botHand = [];
 let trumpCard = null;
-let trumpSuit = "";
-let currentTurn = "player";
-let playerScore = 0;
-let botScore = 0;
-let roundNumber = 1;
+let playerScore = 15;
+let botScore = 15;
 
-// Suits: S, H, D, C (Spades, Hearts, Diamonds, Clubs)
-function getSuit(card) {
-    return card.slice(-5, -4); // "10H.png" => "H"
-}
-
-function getValue(card) {
-    const rank = card.replace(".png", "").slice(0, -1);
-    const order = ["7", "8", "9", "10", "J", "Q", "K", "A"];
-    return order.indexOf(rank);
-}
-
+// === Utility Functions ===
 function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1)];
-        [array[i], array[j]] = [array[j], array[i]];
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+function getCardValue(card) {
+  const rank = card.slice(0, -1);
+  return ['7','8','9','10','J','Q','K','A'].indexOf(rank);
+}
+
+function getCardSuit(card) {
+  return card.slice(-1);
+}
+
+// === Game Setup ===
+function initializeDeck() {
+  const suits = ['C','D','H','S'];
+  const ranks = ['7','8','9','10','J','Q','K','A'];
+  deck = [];
+  for (let suit of suits) {
+    for (let rank of ranks) {
+      deck.push(rank + suit);
     }
-    return array;
+  }
+  shuffle(deck);
 }
 
 function dealCards() {
-    const suits = ["S", "H", "D", "C"];
-    const ranks = ["7", "8", "9", "10", "J", "Q", "K", "A"];
-    const deck = shuffle(suits.flatMap(suit => ranks.map(rank => rank + suit + ".png")));
-
-    playerHand = deck.splice(0, 5);
-    botHand = deck.splice(0, 5);
-    trumpCard = deck.splice(0, 1)[0];
-    trumpSuit = getSuit(trumpCard);
-
-    updateHandDisplay();
-    updateTrumpDisplay();
-    currentTurn = "player";
+  playerHand = deck.splice(0, 5);
+  botHand = deck.splice(0, 5);
+  trumpCard = deck.shift();
 }
 
-function updateHandDisplay() {
-    const playerArea = document.getElementById("player-hand");
-    const botArea = document.getElementById("bot-hand");
-    playerArea.innerHTML = "";
-    botArea.innerHTML = "";
+function renderHands() {
+  const playerDiv = document.getElementById('player-hand');
+  const botDiv = document.getElementById('bot-hand');
+  const trumpDiv = document.getElementById('trump-card');
+  const deckDiv = document.getElementById('deck-card');
 
-    playerHand.forEach(card => {
-        const img = document.createElement("img");
-        img.src = "cards/" + card;
-        img.className = "card";
-        img.onclick = () => playCard(card);
-        playerArea.appendChild(img);
-    });
+  playerDiv.innerHTML = '';
+  botDiv.innerHTML = '';
 
-    botHand.forEach(() => {
-        const back = document.createElement("img");
-        back.src = "cards/card-back.png";
-        back.className = "card";
-        botArea.appendChild(back);
-    });
+  playerHand.forEach(card => {
+    const img = document.createElement('img');
+    img.src = `cards/${card}.png`;
+    img.className = 'card';
+    img.onclick = () => playerPlay(card);
+    playerDiv.appendChild(img);
+  });
+
+  botHand.forEach(() => {
+    const img = document.createElement('img');
+    img.src = 'cards/card-back.png';
+    img.className = 'card';
+    botDiv.appendChild(img);
+  });
+
+  trumpDiv.src = `cards/${trumpCard}.png`;
+  deckDiv.src = 'cards/card-back.png';
 }
 
-function updateTrumpDisplay() {
-    const trumpArea = document.getElementById("trump-area");
-    trumpArea.innerHTML = "";
-    const back = document.createElement("img");
-    back.src = "cards/card-back.png";
-    back.className = "card";
-    const face = document.createElement("img");
-    face.src = "cards/" + trumpCard;
-    face.className = "card";
-    trumpArea.appendChild(back);
-    trumpArea.appendChild(face);
+function updateScores() {
+  document.getElementById('player-score').textContent = `Тоглогч: ${playerScore}`;
+  document.getElementById('bot-score').textContent = `Бот: ${botScore}`;
 }
 
-function playCard(playerCard) {
-    if (currentTurn !== "player") return;
+// === Play Phase Logic ===
+function playerPlay(card) {
+  const playArea = document.getElementById('play-area');
+  playArea.innerHTML = '';
 
-    const index = playerHand.indexOf(playerCard);
-    if (index > -1) playerHand.splice(index, 1);
+  const playerImg = document.createElement('img');
+  playerImg.src = `cards/${card}.png`;
+  playerImg.className = 'card';
+  playArea.appendChild(playerImg);
 
-    const botCard = chooseBotCard(playerCard);
-    const botCardIndex = botHand.indexOf(botCard);
-    if (botCardIndex > -1) botHand.splice(botCardIndex, 1);
+  playerHand = playerHand.filter(c => c !== card);
 
-    showPlay(playerCard, botCard);
-    checkWinner(playerCard, botCard);
+  const botCard = botRespond(card);
+  const botImg = document.createElement('img');
+  botImg.src = `cards/${botCard}.png`;
+  botImg.className = 'card';
+  playArea.appendChild(botImg);
+
+  botHand = botHand.filter(c => c !== botCard);
+
+  evaluateTrick(card, botCard);
+  renderHands();
+  updateScores();
+  checkRoundEnd();
 }
 
-function chooseBotCard(playerCard) {
-    const suit = getSuit(playerCard);
-    const value = getValue(playerCard);
+function botRespond(playerCard) {
+  const playerSuit = getCardSuit(playerCard);
+  const playerVal = getCardValue(playerCard);
 
-    let candidates = botHand.filter(c => getSuit(c) === suit && getValue(c) > value);
-    if (candidates.length === 0) {
-        candidates = botHand.filter(c => getSuit(c) === trumpSuit);
-    }
-    return candidates.length > 0 ? candidates[0] : botHand[0];
+  let beatable = botHand.filter(c => getCardSuit(c) === playerSuit && getCardValue(c) > playerVal);
+  if (beatable.length) return beatable[0];
+
+  let trumps = botHand.filter(c => getCardSuit(c) === getCardSuit(trumpCard));
+  if (trumps.length) return trumps[0];
+
+  return botHand[0];
 }
 
-function showPlay(playerCard, botCard) {
-    const playArea = document.getElementById("play-area");
-    playArea.innerHTML = "";
+function evaluateTrick(playerCard, botCard) {
+  const trumpSuit = getCardSuit(trumpCard);
+  const pSuit = getCardSuit(playerCard);
+  const bSuit = getCardSuit(botCard);
+  const pVal = getCardValue(playerCard);
+  const bVal = getCardValue(botCard);
 
-    const pCard = document.createElement("img");
-    pCard.src = "cards/" + playerCard;
-    pCard.className = "card";
-
-    const bCard = document.createElement("img");
-    bCard.src = "cards/" + botCard;
-    bCard.className = "card";
-
-    playArea.appendChild(pCard);
-    playArea.appendChild(bCard);
+  if (bSuit === pSuit && bVal > pVal || bSuit === trumpSuit && pSuit !== trumpSuit) {
+    playerScore--;
+  } else {
+    botScore--;
+  }
 }
 
-function checkWinner(pCard, bCard) {
-    const pSuit = getSuit(pCard);
-    const bSuit = getSuit(bCard);
-    const pVal = getValue(pCard);
-    const bVal = getValue(bCard);
-
-    let winner = "player";
-
-    if (pSuit === bSuit) {
-        if (pVal < bVal) winner = "bot";
-    } else if (bSuit === trumpSuit) {
-        winner = "bot";
-    }
-
-    if (winner === "player") {
-        alert("Тоглогч хожлоо!");
+function checkRoundEnd() {
+  if (playerHand.length === 0) {
+    if (playerScore <= 0 || botScore <= 0 || playerScore <= -5 || botScore <= -5) {
+      alert(playerScore <= 0 ? "Тоглогч хожлоо!" : "Бот хожлоо!");
     } else {
-        alert("Бот хожлоо!");
+      startGame();
     }
-
-    setTimeout(() => {
-        if (playerHand.length === 0) {
-            updateScore(winner);
-        } else {
-            updateHandDisplay();
-        }
-    }, 1000);
+  }
 }
 
-function updateScore(winner) {
-    if (winner === "player") playerScore++;
-    else botScore++;
-
-    document.getElementById("score").textContent = 
-        `Тоглогч: ${playerScore} | Бот: ${botScore}`;
-    document.getElementById("next-round").style.display = "block";
+function startGame() {
+  initializeDeck();
+  dealCards();
+  renderHands();
+  updateScores();
+  document.getElementById('play-area').innerHTML = '';
 }
-
-function nextRound() {
-    roundNumber++;
-    dealCards();
-    document.getElementById("next-round").style.display = "none";
-}
-
-window.onload = () => {
-    dealCards();
-    document.getElementById("next-round").onclick = nextRound;
-};
