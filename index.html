@@ -110,6 +110,7 @@
       if (!gameStarted) {
         gameStarted = true;
         initializeGame();
+        document.getElementById('swap-button').disabled = false;
       }
     }
 
@@ -132,6 +133,7 @@
           }
           botHand[minIndex] = trumpCard;
           trumpPicked = true;
+          updateHandDisplay(botHand, 'bot-hand');
         } else if (dealer === 'player') {
           if (selected.length === 1) {
             const index = playerHand.indexOf(selected[0]);
