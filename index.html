@@ -89,9 +89,9 @@
   <div id="play-area"></div>
 
   <div id="controls">
-    <button id="start-button" class="btn" onclick="startGame()">ТОГЛО</button>
-    <button id="swap-button" class="btn" onclick="performSwap()">СОЛИХ</button>
-    <button id="reset-button" class="btn" onclick="resetRound()">ШИНЭ</button>
+    <button id="start-button" class="btn">ТОГЛО</button>
+    <button id="swap-button" class="btn">СОЛИХ</button>
+    <button id="reset-button" class="btn">ШИНЭ</button>
   </div>
 
   <div id="player-hand"></div>
@@ -106,6 +106,11 @@
   <script>
     let gameStarted = false;
     let trumpPicked = false;
+
+    document.getElementById('start-button').addEventListener('click', startGame);
+    document.getElementById('swap-button').addEventListener('click', performSwap);
+    document.getElementById('reset-button').addEventListener('click', resetRound);
+
     function startGame() {
       if (!gameStarted) {
         gameStarted = true;
@@ -120,7 +125,6 @@
       const selected = playerHand.filter(c => c.selected);
 
       if (!trumpPicked) {
-        // Trump card pickup by dealer
         if (dealer === 'bot') {
           let minIndex = 0;
           let minValue = getCardValue(botHand[0].tag);
