@@ -105,6 +105,7 @@
 
   <script>
     let gameStarted = false;
+    let trumpPicked = false;
     function startGame() {
       if (!gameStarted) {
         gameStarted = true;
@@ -116,32 +117,45 @@
       if (!gameStarted || !window.playerHand || !window.trumpCard || !window.deck) return;
 
       const selected = playerHand.filter(c => c.selected);
+
+      if (!trumpPicked) {
+        // Trump card pickup by dealer
+        if (dealer === 'bot') {
+          let minIndex = 0;
+          let minValue = getCardValue(botHand[0].tag);
+          for (let i = 1; i < botHand.length; i++) {
+            let value = getCardValue(botHand[i].tag);
+            if (value < minValue) {
+              minValue = value;
+              minIndex = i;
+            }
+          }
+          botHand[minIndex] = trumpCard;
+          trumpPicked = true;
+        } else if (dealer === 'player') {
+          if (selected.length === 1) {
+            const index = playerHand.indexOf(selected[0]);
+            playerHand[index] = trumpCard;
+            trumpPicked = true;
+            selected[0].selected = false;
+            updateHandDisplay(playerHand, 'player-hand');
+            alert('Трамп авлаа. Одоо хөзрөө сольж болно.');
+            return;
+          } else {
+            alert('Та трамп авах хөзрөө 1 ширхэг сонгоно уу!');
+            return;
+          }
+        }
+        return;
+      }
+
       if (selected.length > 0 && selected.length <= deck.length) {
-        // Swap selected cards from deck
         selected.forEach(card => {
           const index = playerHand.indexOf(card);
           const newCard = deck.pop();
           playerHand[index] = newCard;
         });
-      }
-
-      // Dealer gets trump card automatically
-      if (dealer === 'bot') {
-        // bot swaps out its lowest card for trump
-        let minIndex = 0;
-        let minValue = getCardValue(botHand[0].tag);
-        for (let i = 1; i < botHand.length; i++) {
-          let value = getCardValue(botHand[i].tag);
-          if (value < minValue) {
-            minValue = value;
-            minIndex = i;
-          }
-        }
-        botHand[minIndex] = trumpCard;
-      } else if (dealer === 'player') {
-        alert('Та трампаа солих хозроо сонгоод дарна уу!');
-        // Wait for player to select one card and click Swap again
-        return;
+        updateHandDisplay(playerHand, 'player-hand');
       }
 
       document.getElementById('swap-button').disabled = true;
