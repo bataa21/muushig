@@ -8,9 +8,9 @@
       background-color: green;
       color: yellow;
       font-family: sans-serif;
-      text-align: center;
       margin: 0;
       padding: 0;
+      text-align: center;
     }
     #top {
       display: flex;
@@ -29,18 +29,27 @@
       transform: rotate(-15deg);
       margin-right: -40px;
     }
-    #play-area {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 120px;
-      margin: 10px;
+    #bot-label, #player-label {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 5px 0;
     }
     #bot-hand, #player-hand {
       display: flex;
       justify-content: center;
-      margin: 10px 0;
+      margin: 5px 0;
       min-height: 100px;
+    }
+    #play-area {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 180px;
+      margin: 30px 0;
+    }
+    #controls {
+      margin: 15px;
     }
     .card {
       width: 70px;
@@ -50,9 +59,6 @@
     }
     .selected {
       border: 3px solid yellow;
-    }
-    #controls {
-      margin: 15px;
     }
     .btn {
       background: white;
@@ -72,6 +78,9 @@
     <div id="score-bot">Бот: 15</div>
   </div>
 
+  <div id="bot-label">Бот</div>
+  <div id="bot-hand"></div>
+
   <div id="trump-area">
     <img id="deck-card" class="card" src="cards/card-back.png" alt="Deck">
     <img id="trump-card" class="card" src="cards/7H.png" alt="Trump">
@@ -80,208 +89,63 @@
   <div id="play-area"></div>
 
   <div id="controls">
-    <button class="btn" onclick="startGame()">ТОГЛО</button>
-    <button class="btn" onclick="performSwap()">СОЛИХ</button>
-    <button class="btn" onclick="resetRound()">ШИНЭ</button>
+    <button id="start-button" class="btn" onclick="startGame()">ТОГЛО</button>
+    <button id="swap-button" class="btn" onclick="performSwap()">СОЛИХ</button>
+    <button id="reset-button" class="btn" onclick="resetRound()">ШИНЭ</button>
   </div>
 
-  <div id="bot-hand"></div>
   <div id="player-hand"></div>
+  <div id="player-label">Тоглогч</div>
+
+  <script src="muushig_game.js"></script>
+  <script src="swap_phase.js"></script>
+  <script src="play_phase.js"></script>
+  <script src="muushig_play_skip.js"></script>
+  <script src="muushig_scoring_logic.js"></script>
 
   <script>
-    const suits = ['H', 'D', 'S', 'C'];
-    const ranks = ['7','8','9','10','J','Q','K','A'];
-    let playerHand = [], botHand = [], deck = [], trumpCard = '';
-    let playerScore = 15, botScore = 15;
-    let selectedIndices = [];
-    let currentTrick = 0;
     let gameStarted = false;
-    let nextPlayer = 'player';
-
-    function getRandomCardDeck() {
-      const fullDeck = [];
-      for (let s of suits) for (let r of ranks) fullDeck.push(r + s);
-      for (let i = fullDeck.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [fullDeck[i], fullDeck[j]] = [fullDeck[j], fullDeck[i]];
-      }
-      return fullDeck;
-    }
-
-    function updateScores() {
-      document.getElementById('score-player').innerText = `Тоглогч: ${playerScore}`;
-      document.getElementById('score-bot').innerText = `Бот: ${botScore}`;
-    }
-
     function startGame() {
-      deck = getRandomCardDeck();
-      playerHand = deck.splice(0, 5);
-      botHand = deck.splice(0, 5);
-      trumpCard = deck.pop();
-      currentTrick = 0;
-      gameStarted = false;
-      nextPlayer = Math.random() > 0.5 ? 'player' : 'bot';
-      document.getElementById('trump-card').src = `cards/${trumpCard}.png`;
-      drawHands();
-      if (nextPlayer === 'bot') setTimeout(botPlay, 1000);
-    }
-
-    function drawHands() {
-      const playerDiv = document.getElementById('player-hand');
-      const botDiv = document.getElementById('bot-hand');
-      playerDiv.innerHTML = '';
-      botDiv.innerHTML = '';
-
-      playerHand.forEach((card, index) => {
-        const img = document.createElement('img');
-        img.src = `cards/${card}.png`;
-        img.className = 'card';
-        img.onclick = !gameStarted ? () => toggleSelect(index, img) : () => playCard(index);
-        if (selectedIndices.includes(index)) img.classList.add('selected');
-        playerDiv.appendChild(img);
-      });
-
-      botHand.forEach(() => {
-        const img = document.createElement('img');
-        img.src = 'cards/card-back.png';
-        img.className = 'card';
-        botDiv.appendChild(img);
-      });
-    }
-
-    function toggleSelect(index, imgElement) {
-      if (selectedIndices.includes(index)) {
-        selectedIndices = selectedIndices.filter(i => i !== index);
-        imgElement.classList.remove('selected');
-      } else {
-        selectedIndices.push(index);
-        imgElement.classList.add('selected');
+      if (!gameStarted) {
+        gameStarted = true;
+        initializeGame();
       }
     }
 
     function performSwap() {
-      if (gameStarted || selectedIndices.length === 0) {
-        alert("Эхлээд СОЛИХ товчоор солино уу!");
+      if (!gameStarted || !window.playerHand || !window.trumpCard || !window.deck) return;
+
+      const selected = playerHand.filter(c => c.selected);
+      if (selected.length > 0 && selected.length <= deck.length) {
+        // Swap selected cards from deck
+        selected.forEach(card => {
+          const index = playerHand.indexOf(card);
+          const newCard = deck.pop();
+          playerHand[index] = newCard;
+        });
+      }
+
+      // Dealer gets trump card automatically
+      if (dealer === 'bot') {
+        // bot swaps out its lowest card for trump
+        let minIndex = 0;
+        let minValue = getCardValue(botHand[0].tag);
+        for (let i = 1; i < botHand.length; i++) {
+          let value = getCardValue(botHand[i].tag);
+          if (value < minValue) {
+            minValue = value;
+            minIndex = i;
+          }
+        }
+        botHand[minIndex] = trumpCard;
+      } else if (dealer === 'player') {
+        alert('Та трампаа солих хозроо сонгоод дарна уу!');
+        // Wait for player to select one card and click Swap again
         return;
       }
-      selectedIndices.sort((a, b) => b - a);
-      for (let i of selectedIndices) {
-        if (deck.length > 0) playerHand[i] = deck.pop();
-      }
-      selectedIndices = [];
-      gameStarted = true;
-      drawHands();
-    }
 
-    function playCard(index) {
-      if (!gameStarted || nextPlayer !== 'player') return;
-      const playerCard = playerHand.splice(index, 1)[0];
-      const botCard = chooseBotCard(playerCard);
-      botHand = botHand.filter(c => c !== botCard);
-      showPlayedCards(playerCard, botCard);
-
-      let winner = evaluateTrickWinner(playerCard, botCard);
-      if (winner === 'player') botScore--;
-      else playerScore--;
-
-      nextPlayer = winner;
-      updateScores();
-      currentTrick++;
-
-      setTimeout(() => {
-        document.getElementById('play-area').innerHTML = '';
-        drawHands();
-        checkGameOver();
-        if (nextPlayer === 'bot') botPlay();
-      }, 2000);
-    }
-
-    function botPlay() {
-      if (!gameStarted || botHand.length === 0 || playerHand.length === 0) return;
-      const botCard = botHand.shift();
-      const playerCard = playerHand.shift();
-      showPlayedCards(playerCard, botCard);
-
-      let winner = evaluateTrickWinner(playerCard, botCard);
-      if (winner === 'player') botScore--;
-      else playerScore--;
-
-      nextPlayer = winner;
-      updateScores();
-      currentTrick++;
-
-      setTimeout(() => {
-        document.getElementById('play-area').innerHTML = '';
-        drawHands();
-        checkGameOver();
-        if (nextPlayer === 'bot') botPlay();
-      }, 2000);
-    }
-
-    // Enhanced bot strategy: pick the best matching card or fallback wisely
-    function chooseBotCard(playerCard) {
-      const playerSuit = playerCard.slice(-1);
-      const playerValue = ranks.indexOf(playerCard.slice(0, -1));
-
-      // Try to beat the card in same suit
-      let candidates = botHand.filter(c => c.slice(-1) === playerSuit && ranks.indexOf(c.slice(0, -1)) > playerValue);
-      candidates.sort((a, b) => ranks.indexOf(a.slice(0, -1)) - ranks.indexOf(b.slice(0, -1)));
-      if (candidates.length > 0) return candidates[0];
-
-      // Try using weakest trump
-      const trumpSuit = trumpCard.slice(-1);
-      candidates = botHand.filter(c => c.slice(-1) === trumpSuit);
-      candidates.sort((a, b) => ranks.indexOf(a.slice(0, -1)) - ranks.indexOf(b.slice(0, -1)));
-      if (candidates.length > 0) return candidates[0];
-
-      // Give lowest card
-      return botHand.slice().sort((a, b) => ranks.indexOf(a.slice(0, -1)) - ranks.indexOf(b.slice(0, -1)))[0];
-    }
-
-    function evaluateTrickWinner(pCard, bCard) {
-      const pSuit = pCard.slice(-1), bSuit = bCard.slice(-1);
-      const pValue = ranks.indexOf(pCard.slice(0, -1)), bValue = ranks.indexOf(bCard.slice(0, -1));
-      if (pSuit === bSuit) return pValue > bValue ? 'player' : 'bot';
-      if (bSuit === trumpCard.slice(-1)) return 'bot';
-      if (pSuit === trumpCard.slice(-1)) return 'player';
-      return 'player';
-    }
-
-    function showPlayedCards(playerCard, botCard) {
-      const area = document.getElementById('play-area');
-      area.innerHTML = '';
-      const bImg = document.createElement('img');
-      bImg.src = `cards/${botCard}.png`;
-      bImg.className = 'card';
-      const pImg = document.createElement('img');
-      pImg.src = `cards/${playerCard}.png`;
-      pImg.className = 'card';
-      area.appendChild(bImg);
-      area.appendChild(pImg);
-    }
-
-    function checkGameOver() {
-      if (playerScore <= 0 || playerScore <= -4) {
-        alert('🎉 Тоглогч ялав!');
-        resetRound();
-      } else if (botScore <= 0 || botScore <= -4) {
-        alert('🤖 Бот ялав!');
-        resetRound();
-      } else if (playerHand.length > 0 && botHand.length > 0) {
-        if (nextPlayer === 'bot') {
-          setTimeout(botPlay, 1000);
-        }
-      }
-    }
-
-    function resetRound() {
-      playerHand = [];
-      botHand = [];
-      selectedIndices = [];
-      document.getElementById('player-hand').innerHTML = '';
-      document.getElementById('bot-hand').innerHTML = '';
-      document.getElementById('play-area').innerHTML = '';
-      updateScores();
+      document.getElementById('swap-button').disabled = true;
+      startPlayPhase();
     }
   </script>
 </body>
