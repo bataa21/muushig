@@ -90,7 +90,7 @@
 
   <div id="controls">
     <button id="start-button" class="btn">ТОГЛО</button>
-    <button id="swap-button" class="btn">СОЛИХ</button>
+    <button id="swap-button" class="btn" disabled>СОЛИХ</button>
     <button id="reset-button" class="btn">ШИНЭ</button>
   </div>
 
@@ -166,6 +166,10 @@
 
       document.getElementById('swap-button').disabled = true;
       startPlayPhase();
+    }
+
+    function resetRound() {
+      location.reload();
     }
   </script>
 </body>
