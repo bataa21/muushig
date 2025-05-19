@@ -120,12 +120,18 @@
     }
 
     function performSwap() {
-      if (!gameStarted || !window.playerHand || !window.trumpCard || !window.deck) return;
+      console.log("Swap button clicked");
+      if (!gameStarted || !window.playerHand || !window.trumpCard || !window.deck) {
+        alert("Game hasn't started or card data missing.");
+        return;
+      }
 
       const selected = playerHand.filter(c => c.selected);
+      console.log("Selected cards for swap:", selected);
 
       if (!trumpPicked) {
         if (dealer === 'bot') {
+          console.log("Bot is dealer. Picking up trump...");
           let minIndex = 0;
           let minValue = getCardValue(botHand[0].tag);
           for (let i = 1; i < botHand.length; i++) {
@@ -145,10 +151,10 @@
             trumpPicked = true;
             selected[0].selected = false;
             updateHandDisplay(playerHand, 'player-hand');
-            alert('Трамп авлаа. Одоо хөзрөө сольж болно.');
+            alert('Трамп авлаа. Одоо хөзрөө солиж болно.');
             return;
           } else {
-            alert('Та трамп авах хөзрөө 1 ширхэг сонгоно уу!');
+            alert('Трамп авахын тулд 1 хөзөр сонгоно уу.');
             return;
           }
         }
@@ -162,10 +168,12 @@
           playerHand[index] = newCard;
         });
         updateHandDisplay(playerHand, 'player-hand');
+        document.getElementById('swap-button').disabled = true;
+        console.log("Swapping complete. Starting play phase.");
+        startPlayPhase();
+      } else {
+        alert("Солихын тулд 1-5 хөзөр сонгоно уу.");
       }
-
-      document.getElementById('swap-button').disabled = true;
-      startPlayPhase();
     }
 
     function resetRound() {
