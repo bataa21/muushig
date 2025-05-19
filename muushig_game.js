@@ -1,320 +1,74 @@
 // muushig_game.js
 
-let playerScore = 15;
-let botScore = 15;
-let playerTricksWon = 0;
-let botTricksWon = 0;
-let trumpSuit = "H"; // default trump suit
-let currentPlayerTurn = "player";
-
-const scoreDisplayPlayer = document.getElementById("score-player");
-const scoreDisplayBot = document.getElementById("score-bot");
-const playArea = document.getElementById("play-area");
-const playerHandDiv = document.getElementById("player-hand");
-const botHandDiv = document.getElementById("bot-hand");
-const deck = [];
 let playerHand = [];
 let botHand = [];
-
-function updateScores() {
-    scoreDisplayPlayer.textContent = `Тоглогч: ${playerScore}`;
-    scoreDisplayBot.textContent = `Бот: ${botScore}`;
-}
-
-function resolveTrick(playerCard, botCard) {
-    const playerSuit = playerCard.suit;
-    const botSuit = botCard.suit;
-
-    let winner = "";
-    if (playerSuit === botSuit) {
-        winner = playerCard.rank > botCard.rank ? "player" : "bot";
-    } else if (botSuit === trumpSuit) {
-        winner = "bot";
-    } else if (playerSuit === trumpSuit) {
-        winner = "player";
-    } else {
-        winner = "player";
-    }
-
-    if (winner === "player") {
-        botScore--;
-        playerTricksWon++;
-        alert("Тоглогч хожлоо!");
-    } else {
-        playerScore--;
-        botTricksWon++;
-        alert("Бот хожлоо!");
-    }
-
-    updateScores();
-    checkRoundEnd();
-}
-
-function checkRoundEnd() {
-    const totalTricks = playerTricksWon + botTricksWon;
-    if (totalTricks >= 5) {
-        setTimeout(() => {
-            alert("Раунд дууслаа! Шинэ раунд эхэлнэ.");
-            resetRound();
-        }, 500);
-    }
-    if (playerScore <= 0 || botScore <= -4) {
-        setTimeout(() => alert("Та ялав!"), 500);
-        disableGame();
-    } else if (botScore <= 0 || playerScore <= -4) {
-        setTimeout(() => alert("Бот ялав!"), 500);
-        disableGame();
-    }
-}
-
-function resetRound() {
-    playerTricksWon = 0;
-    botTricksWon = 0;
-    playArea.innerHTML = "";
-    playerHandDiv.innerHTML = "";
-    botHandDiv.innerHTML = "";
-    shuffleDeck();
-    dealHands();
-    setupCardClicks();
-}
-
-function disableGame() {
-    document.querySelectorAll(".card").forEach(card => card.onclick = null);
-}
-
-function cardFromElement(el) {
-    const tag = el.getAttribute("data-tag");
-    return {
-        suit: tag[tag.length - 1],
-        rank: parseInt(tag.slice(0, -1)),
-        element: el
-    };
-}
-
-function createCardElement(card) {
-    const img = document.createElement("img");
-    img.src = `cards/${card}.png`;
-    img.className = "card";
-    img.setAttribute("data-tag", card);
-    return img;
-}
-
-function shuffleDeck() {
-    deck.length = 0;
-    const suits = ["S", "H", "D", "C"];
-    const ranks = [7, 8, 9, 10, 11, 12, 13, 14];
-    for (const suit of suits) {
-        for (const rank of ranks) {
-            deck.push(`${rank}${suit}`);
-        }
-    }
-    for (let i = deck.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [deck[i], deck[j]] = [deck[j], deck[i]];
-    }
-}
-
-function dealHands() {
-    playerHand = deck.splice(0, 5);
-    botHand = deck.splice(0, 5);
-    const trumpCard = deck.splice(0, 1)[0];
-    trumpSuit = trumpCard[trumpCard.length - 1];
-
-    document.getElementById("trump-card").src = `cards/${trumpCard}.png`;
-
-    playerHand.forEach(card => {
-        const el = createCardElement(card);
-        playerHandDiv.appendChild(el);
-    });
-    botHand.forEach(() => {
-        const el = createCardElement("card-back");
-        botHandDiv.appendChild(el);
-    });
-}
-
-function botPlay(playerCard) {
-    let chosenCard = botHand.shift();
-    const el = createCardElement(chosenCard);
-    el.setAttribute("data-tag", chosenCard);
-    playArea.appendChild(el);
-    resolveTrick(playerCard, cardFromElement(el));
-    currentPlayerTurn = "player";
-}
-
-function setupCardClicks() {
-    document.querySelectorAll("#player-hand .card").forEach(card => {
-        card.onclick = () => {
-            if (currentPlayerTurn !== "player") return;
-            const playerCard = cardFromElement(card);
-            card.remove();
-            playArea.appendChild(playerCard.element);
-            currentPlayerTurn = "bot";
-            setTimeout(() => botPlay(playerCard), 700);
-        };
-    });
-}
-
-shuffleDeck();
-dealHands();
-setupCardClicks();
-updateScores();
-// muushig_game.js
-
+let deck = [];
+let trumpCard = null;
+let dealer = '';
 let playerScore = 15;
 let botScore = 15;
-let playerTricksWon = 0;
-let botTricksWon = 0;
-let trumpSuit = "H"; // default trump suit
-let currentPlayerTurn = "player";
 
-const scoreDisplayPlayer = document.getElementById("score-player");
-const scoreDisplayBot = document.getElementById("score-bot");
-const playArea = document.getElementById("play-area");
-const playerHandDiv = document.getElementById("player-hand");
-const botHandDiv = document.getElementById("bot-hand");
-const deck = [];
-let playerHand = [];
-let botHand = [];
+function initializeGame() {
+  deck = generateDeck();
+  shuffleDeck(deck);
 
-function updateScores() {
-    scoreDisplayPlayer.textContent = `Тоглогч: ${playerScore}`;
-    scoreDisplayBot.textContent = `Бот: ${botScore}`;
+  // Deal 10 cards to each player
+  playerHand = deck.splice(0, 5);
+  botHand = deck.splice(0, 5);
+
+  // Set the trump card
+  trumpCard = deck.pop();
+  updateTrumpDisplay(trumpCard);
+
+  // Randomly choose dealer
+  dealer = Math.random() < 0.5 ? 'player' : 'bot';
+  console.log("Dealer:", dealer);
+
+  // Display hands
+  updateHandDisplay(playerHand, 'player-hand');
+  updateHandDisplay(botHand, 'bot-hand', true); // face-up for debugging
+
+  // Clear play area
+  document.getElementById('play-area').innerHTML = '';
 }
 
-function resolveTrick(playerCard, botCard) {
-    const playerSuit = playerCard.suit;
-    const botSuit = botCard.suit;
-
-    let winner = "";
-    if (playerSuit === botSuit) {
-        winner = playerCard.rank > botCard.rank ? "player" : "bot";
-    } else if (botSuit === trumpSuit) {
-        winner = "bot";
-    } else if (playerSuit === trumpSuit) {
-        winner = "player";
-    } else {
-        winner = "player";
+function generateDeck() {
+  const suits = ['H', 'D', 'S', 'C'];
+  const values = ['7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+  let deck = [];
+  for (let s of suits) {
+    for (let v of values) {
+      deck.push({ tag: v + s, selected: false });
     }
-
-    if (winner === "player") {
-        botScore--;
-        playerTricksWon++;
-        alert("Тоглогч хожлоо!");
-    } else {
-        playerScore--;
-        botTricksWon++;
-        alert("Бот хожлоо!");
-    }
-
-    updateScores();
-    checkRoundEnd();
+  }
+  return deck;
 }
 
-function checkRoundEnd() {
-    const totalTricks = playerTricksWon + botTricksWon;
-    if (totalTricks >= 5) {
-        setTimeout(() => {
-            alert("Раунд дууслаа! Шинэ раунд эхэлнэ.");
-            resetRound();
-        }, 500);
-    }
-    if (playerScore <= 0 || botScore <= -4) {
-        setTimeout(() => alert("Та ялав!"), 500);
-        disableGame();
-    } else if (botScore <= 0 || playerScore <= -4) {
-        setTimeout(() => alert("Бот ялав!"), 500);
-        disableGame();
-    }
+function shuffleDeck(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
 }
 
-function resetRound() {
-    playerTricksWon = 0;
-    botTricksWon = 0;
-    playArea.innerHTML = "";
-    playerHandDiv.innerHTML = "";
-    botHandDiv.innerHTML = "";
-    shuffleDeck();
-    dealHands();
-    setupCardClicks();
-}
-
-function disableGame() {
-    document.querySelectorAll(".card").forEach(card => card.onclick = null);
-}
-
-function cardFromElement(el) {
-    const tag = el.getAttribute("data-tag");
-    return {
-        suit: tag[tag.length - 1],
-        rank: parseInt(tag.slice(0, -1)),
-        element: el
+function updateHandDisplay(hand, elementId, faceUp = false) {
+  const container = document.getElementById(elementId);
+  container.innerHTML = '';
+  hand.forEach(card => {
+    const img = document.createElement('img');
+    img.className = 'card';
+    img.src = faceUp ? `cards/${card.tag}.png` : 'cards/card-back.png';
+    img.alt = card.tag;
+    img.onclick = () => {
+      card.selected = !card.selected;
+      img.classList.toggle('selected', card.selected);
     };
+    container.appendChild(img);
+  });
 }
 
-function createCardElement(card) {
-    const img = document.createElement("img");
-    img.src = `cards/${card}.png`;
-    img.className = "card";
-    img.setAttribute("data-tag", card);
-    return img;
+function updateTrumpDisplay(card) {
+  const trumpCardImg = document.getElementById('trump-card');
+  trumpCardImg.src = `cards/${card.tag}.png`;
+  trumpCardImg.alt = card.tag;
 }
-
-function shuffleDeck() {
-    deck.length = 0;
-    const suits = ["S", "H", "D", "C"];
-    const ranks = [7, 8, 9, 10, 11, 12, 13, 14];
-    for (const suit of suits) {
-        for (const rank of ranks) {
-            deck.push(`${rank}${suit}`);
-        }
-    }
-    for (let i = deck.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [deck[i], deck[j]] = [deck[j], deck[i]];
-    }
-}
-
-function dealHands() {
-    playerHand = deck.splice(0, 5);
-    botHand = deck.splice(0, 5);
-    const trumpCard = deck.splice(0, 1)[0];
-    trumpSuit = trumpCard[trumpCard.length - 1];
-
-    document.getElementById("trump-card").src = `cards/${trumpCard}.png`;
-
-    playerHand.forEach(card => {
-        const el = createCardElement(card);
-        playerHandDiv.appendChild(el);
-    });
-    botHand.forEach(() => {
-        const el = createCardElement("card-back");
-        botHandDiv.appendChild(el);
-    });
-}
-
-function botPlay(playerCard) {
-    let chosenCard = botHand.shift();
-    const el = createCardElement(chosenCard);
-    el.setAttribute("data-tag", chosenCard);
-    playArea.appendChild(el);
-    resolveTrick(playerCard, cardFromElement(el));
-    currentPlayerTurn = "player";
-}
-
-function setupCardClicks() {
-    document.querySelectorAll("#player-hand .card").forEach(card => {
-        card.onclick = () => {
-            if (currentPlayerTurn !== "player") return;
-            const playerCard = cardFromElement(card);
-            card.remove();
-            playArea.appendChild(playerCard.element);
-            currentPlayerTurn = "bot";
-            setTimeout(() => botPlay(playerCard), 700);
-        };
-    });
-}
-
-shuffleDeck();
-dealHands();
-setupCardClicks();
-updateScores();
