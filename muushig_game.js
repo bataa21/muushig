@@ -10,6 +10,7 @@ let botScore = 15;
 
 function initializeGame() {
   deck = generateDeck();
+    cardData = [...deck]; // make cardData globally available
   shuffleDeck(deck);
 
   // Deal 10 cards to each player
