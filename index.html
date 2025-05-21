@@ -1,184 +1,38 @@
 <!DOCTYPE html>
-<html lang="mn">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Муушиг</title>
-  <style>
-    body {
-      background-color: green;
-      color: yellow;
-      font-family: sans-serif;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-    #top {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px 40px;
-      font-size: 20px;
-      font-weight: bold;
-    }
-    #trump-area {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 10px 0;
-    }
-    #deck-card {
-      transform: rotate(-15deg);
-      margin-right: -40px;
-    }
-    #bot-label, #player-label {
-      font-size: 18px;
-      font-weight: bold;
-      margin: 5px 0;
-    }
-    #bot-hand, #player-hand {
-      display: flex;
-      justify-content: center;
-      margin: 5px 0;
-      min-height: 100px;
-    }
-    #play-area {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 180px;
-      margin: 30px 0;
-    }
-    #controls {
-      margin: 15px;
-    }
-    .card {
-      width: 70px;
-      height: auto;
-      margin: 5px;
-      cursor: pointer;
-    }
-    .selected {
-      border: 3px solid yellow;
-    }
-    .btn {
-      background: white;
-      color: black;
-      font-weight: bold;
-      padding: 8px 16px;
-      margin: 5px;
-      cursor: pointer;
-      border: none;
-      font-size: 16px;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Muushig 2-Player</title>
+  <link rel="stylesheet" href="muushig.css" />
 </head>
 <body>
-  <div id="top">
-    <div id="score-player">Тоглогч: 15</div>
-    <div id="score-bot">Бот: 15</div>
+  <div id="table">
+    <!-- Top Player (Bot) -->
+    <div class="player" id="player-top">
+      Bot (<span id="bot-score">0</span>)
+      <div class="hand bot-hand"></div>
+    </div>
+
+    <!-- Center Area -->
+    <div id="center-area">
+      <div id="deck">🂠</div>
+      <div id="trump-card">?</div>
+      <div id="flying-card">🂠</div>
+      <div id="round-play">
+        <div id="played-by-player"></div>
+        <div id="played-by-bot"></div>
+      </div>
+    </div>
+
+    <!-- Bottom Player (You) -->
+    <div class="player" id="player-bottom">
+      You (<span id="player-score">0</span>)
+      <div class="hand player-hand"></div>
+    </div>
   </div>
 
-  <div id="bot-label">Бот</div>
-  <div id="bot-hand"></div>
-
-  <div id="trump-area">
-    <img id="deck-card" class="card" src="cards/card-back.png" alt="Deck">
-    <img id="trump-card" class="card" src="cards/7H.png" alt="Trump">
-  </div>
-
-  <div id="play-area"></div>
-
-  <div id="controls">
-    <button id="start-button" class="btn">ТОГЛО</button>
-    <button id="swap-button" class="btn" disabled>СОЛИХ</button>
-    <button id="reset-button" class="btn">ШИНЭ</button>
-  </div>
-
-  <div id="player-hand"></div>
-  <div id="player-label">Тоглогч</div>
-
-  <script src="muushig_game.js"></script>
-  <script src="swap_phase.js"></script>
-  <script src="play_phase.js"></script>
-  <script src="muushig_play_skip.js"></script>
-  <script src="muushig_scoring_logic.js"></script>
-
-  <script>
-    let gameStarted = false;
-    let trumpPicked = false;
-
-    document.getElementById('start-button').addEventListener('click', startGame);
-    document.getElementById('swap-button').addEventListener('click', performSwap);
-    document.getElementById('reset-button').addEventListener('click', resetRound);
-
-    function startGame() {
-      if (!gameStarted) {
-        gameStarted = true;
-        initializeGame();
-        document.getElementById('swap-button').disabled = false;
-      }
-    }
-
-    function performSwap() {
-      console.log("Swap button clicked");
-      if (!gameStarted || !window.playerHand || !window.trumpCard || !window.deck) {
-        alert("Game hasn't started or card data missing.");
-        return;
-      }
-
-      const selected = playerHand.filter(c => c.selected);
-      console.log("Selected cards for swap:", selected);
-
-      if (!trumpPicked) {
-        if (dealer === 'bot') {
-          console.log("Bot is dealer. Picking up trump...");
-          let minIndex = 0;
-          let minValue = getCardValue(botHand[0].tag);
-          for (let i = 1; i < botHand.length; i++) {
-            let value = getCardValue(botHand[i].tag);
-            if (value < minValue) {
-              minValue = value;
-              minIndex = i;
-            }
-          }
-          botHand[minIndex] = trumpCard;
-          trumpPicked = true;
-          updateHandDisplay(botHand, 'bot-hand');
-        } else if (dealer === 'player') {
-          if (selected.length === 1) {
-            const index = playerHand.indexOf(selected[0]);
-            playerHand[index] = trumpCard;
-            trumpPicked = true;
-            selected[0].selected = false;
-            updateHandDisplay(playerHand, 'player-hand');
-            alert('Трамп авлаа. Одоо хөзрөө солиж болно.');
-            return;
-          } else {
-            alert('Трамп авахын тулд 1 хөзөр сонгоно уу.');
-            return;
-          }
-        }
-        return;
-      }
-
-      if (selected.length > 0 && selected.length <= deck.length) {
-        selected.forEach(card => {
-          const index = playerHand.indexOf(card);
-          const newCard = deck.pop();
-          playerHand[index] = newCard;
-        });
-        updateHandDisplay(playerHand, 'player-hand');
-        document.getElementById('swap-button').disabled = true;
-        console.log("Swapping complete. Starting play phase.");
-        startPlayPhase();
-      } else {
-        alert("Солихын тулд 1-5 хөзөр сонгоно уу.");
-      }
-    }
-
-    function resetRound() {
-      location.reload();
-    }
-  </script>
+  <audio id="shuffleSound" src="shuffle.wav" preload="auto"></audio>
+  <script src="muushig.js"></script>
 </body>
 </html>
