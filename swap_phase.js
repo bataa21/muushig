@@ -1,8 +1,6 @@
 
 const suits = ['C', 'D', 'H', 'S'];
 const ranks = ['7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-let deck = [], playerHand = [], botHand = [], trumpCard = '', remainingDeck = [];
-let selectedIndexes = [];
 
 function buildDeck() {
     deck = [];
@@ -40,7 +38,6 @@ function renderSwapView() {
     const playerArea = document.getElementById("player-hand");
     const botArea = document.getElementById("bot-hand");
     const trumpImg = document.getElementById("trump-card");
-    const deckImg = document.getElementById("deck-card");
 
     playerArea.innerHTML = '';
     botArea.innerHTML = '';

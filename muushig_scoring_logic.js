@@ -1,9 +1,4 @@
-let playerHand = [];
-let botHand = [];
-let trumpCard = null;
 let trumpSuit = "";
-let playerScore = 15;
-let botScore = 15;
 let playCount = 0;
 
 function getSuit(card) {
@@ -18,7 +13,6 @@ function getValue(card) {
 function shuffleDeck() {
     const suits = ["S", "H", "D", "C"];
     const ranks = ["7", "8", "9", "10", "J", "Q", "K", "A"];
-    const deck = suits.flatMap(suit => ranks.map(rank => rank + suit + ".png"));
     for (let i = deck.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [deck[i], deck[j]] = [deck[j], deck[i]];
@@ -27,7 +21,6 @@ function shuffleDeck() {
 }
 
 function dealNewRound() {
-    const deck = shuffleDeck();
     playerHand = deck.splice(0, 5);
     botHand = deck.splice(0, 5);
     trumpCard = deck.pop();

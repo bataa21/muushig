@@ -1,10 +1,4 @@
 // === Global Variables ===
-let deck = [];
-let playerHand = [];
-let botHand = [];
-let trumpCard = null;
-let playerScore = 15;
-let botScore = 15;
 
 // === Utility Functions ===
 function shuffle(array) {
@@ -46,7 +40,6 @@ function renderHands() {
   const playerDiv = document.getElementById('player-hand');
   const botDiv = document.getElementById('bot-hand');
   const trumpDiv = document.getElementById('trump-card');
-  const deckDiv = document.getElementById('deck-card');
 
   playerDiv.innerHTML = '';
   botDiv.innerHTML = '';

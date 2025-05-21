@@ -1,12 +1,6 @@
 
 const suits = ['♠️', '♥️', '♣️', '♦️'];
 const ranks = ['7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-let deck = [];
-let playerHand = [];
-let botHand = [];
-let trumpCard = '';
-let playerScore = 0;
-let botScore = 0;
 
 function initGame() {
     buildDeck();
