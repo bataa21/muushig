@@ -1,75 +1,245 @@
-// muushig_game.js
+// ==============================
+// Muushig 2-Player Game Logic
+// ==============================
 
-let playerHand = [];
-let botHand = [];
-let deck = [];
-let trumpCard = null;
-let dealer = '';
-let playerScore = 15;
-let botScore = 15;
+// --- Global Variables (from globals.js) ---
+// suits, ranks, deck, playerHand, botHand, trumpCard, playerScore, botScore, isPlayerTurn, currentPhase
 
-function initializeGame() {
-  deck = generateDeck();
-    cardData = [...deck]; // make cardData globally available
-  shuffleDeck(deck);
+let selectedCardIndex = null;
+let lastPlayerCard = null;
+let lastBotCard = null;
+let currentPhase = ''; // ← ADD THIS
 
-  // Deal 10 cards to each player
-  playerHand = deck.splice(0, 5);
-  botHand = deck.splice(0, 5);
 
-  // Set the trump card
-  trumpCard = deck.pop();
-  updateTrumpDisplay(trumpCard);
-
-  // Randomly choose dealer
-  dealer = Math.random() < 0.5 ? 'player' : 'bot';
-  console.log("Dealer:", dealer);
-
-  // Display hands
-  updateHandDisplay(playerHand, 'player-hand');
-  updateHandDisplay(botHand, 'bot-hand', true); // face-up for debugging
-
-  // Clear play area
-  document.getElementById('play-area').innerHTML = '';
-}
-
-function generateDeck() {
-  const suits = ['H', 'D', 'S', 'C'];
-  const values = ['7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-  let deck = [];
-  for (let s of suits) {
-    for (let v of values) {
-      deck.push({ tag: v + s, selected: false });
+// --- Utility Functions ---
+function createDeck() {
+  deck = [];
+  for (const suit of suits) {
+    for (const rank of ranks) {
+      deck.push(`${rank}${suit}`);
     }
   }
-  return deck;
 }
 
-function shuffleDeck(array) {
-  for (let i = array.length - 1; i > 0; i--) {
+function shuffleDeck() {
+  for (let i = deck.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+    [deck[i], deck[j]] = [deck[j], deck[i]];
   }
 }
 
-function updateHandDisplay(hand, elementId, faceUp = false) {
-  const container = document.getElementById(elementId);
-  container.innerHTML = '';
-  hand.forEach(card => {
+function dealCards() {
+  playerHand = deck.splice(0, 5);
+  botHand = deck.splice(0, 5);
+  trumpCard = deck.pop();
+}
+
+function updateScores() {
+  document.getElementById('player-score').innerText = playerScore;
+  document.getElementById('bot-score').innerText = botScore;
+}
+
+function updatePhaseDisplay() {
+  const phaseEl = document.getElementById('phase-indicator');
+  if (phaseEl) phaseEl.innerText = currentPhase.toUpperCase();
+}
+
+function displayPlayerHand() {
+  const playerHandDiv = document.getElementById('player-hand');
+  playerHandDiv.innerHTML = '';
+  playerHand.forEach((card, i) => {
     const img = document.createElement('img');
-    img.className = 'card';
-    img.src = faceUp ? `cards/${card.tag}.png` : 'cards/card-back.png';
-    img.alt = card.tag;
-    img.onclick = () => {
-      card.selected = !card.selected;
-      img.classList.toggle('selected', card.selected);
-    };
-    container.appendChild(img);
+    img.src = `cards/${card}.png?v=${Date.now()}`;
+    img.alt = card;
+    img.classList.add('card');
+    if (i === selectedCardIndex) img.classList.add('selected');
+    img.addEventListener('click', () => {
+      if (currentPhase === 'play') {
+        playerPlaysCard(i);
+      } else {
+        selectedCardIndex = i;
+        displayPlayerHand();
+      }
+    });
+    playerHandDiv.appendChild(img);
   });
 }
 
-function updateTrumpDisplay(card) {
-  const trumpCardImg = document.getElementById('trump-card');
-  trumpCardImg.src = `cards/${card.tag}.png`;
-  trumpCardImg.alt = card.tag;
+function displayBotHand() {
+  const botHandDiv = document.getElementById('bot-hand');
+  botHandDiv.innerHTML = '';
+  botHand.forEach(() => {
+    const img = document.createElement('img');
+    img.src = 'cards/back.png?v=' + Date.now();
+    img.alt = 'Hidden';
+    img.classList.add('card');
+    botHandDiv.appendChild(img);
+  });
 }
+
+function displayTrumpCard() {
+  const trumpImg = document.getElementById('trump');
+  if (trumpCard) {
+    trumpImg.src = `cards/${trumpCard}.png?v=${Date.now()}`;
+    trumpImg.alt = trumpCard;
+  } else {
+    trumpImg.src = '';
+    trumpImg.alt = '';
+  }
+}
+
+function displayPlayArea() {
+  const playArea = document.getElementById('play-area');
+  playArea.innerHTML = '';
+
+  if (lastBotCard) {
+    const botCardImg = document.createElement('img');
+    botCardImg.src = `cards/${lastBotCard}.png?v=${Date.now()}`;
+    botCardImg.alt = lastBotCard;
+    botCardImg.classList.add('card');
+    playArea.appendChild(botCardImg);
+  }
+
+  if (lastPlayerCard) {
+    const playerCardImg = document.createElement('img');
+    playerCardImg.src = `cards/${lastPlayerCard}.png?v=${Date.now()}`;
+    playerCardImg.alt = lastPlayerCard;
+    playerCardImg.classList.add('card');
+    playArea.appendChild(playerCardImg);
+  }
+}
+
+function startGame() {
+  createDeck();
+  shuffleDeck();
+  dealCards();
+  updateScores();
+  displayPlayerHand();
+  displayBotHand();
+  displayTrumpCard();
+  lastPlayerCard = null;
+  lastBotCard = null;
+  displayPlayArea();
+  currentPhase = 'swap';
+  updatePhaseDisplay();
+  console.log('New game started. Phase:', currentPhase);
+}
+
+function performSwap() {
+  if (currentPhase !== 'swap') return;
+
+  playerHand.sort((a, b) => ranks.indexOf(a.slice(0, -1)) - ranks.indexOf(b.slice(0, -1)));
+  for (let i = 0; i < 2 && deck.length > 0; i++) {
+    playerHand[i] = deck.pop();
+  }
+
+  botHand.sort((a, b) => ranks.indexOf(a.slice(0, -1)) - ranks.indexOf(b.slice(0, -1)));
+  for (let i = 0; i < 2 && deck.length > 0; i++) {
+    botHand[i] = deck.pop();
+  }
+
+  if (trumpCard) {
+    let weakest = 0;
+    for (let i = 1; i < botHand.length; i++) {
+      if (ranks.indexOf(botHand[i].slice(0, -1)) < ranks.indexOf(botHand[weakest].slice(0, -1))) {
+        weakest = i;
+      }
+    }
+    botHand[weakest] = trumpCard;
+    trumpCard = null;
+  }
+
+  displayPlayerHand();
+  displayBotHand();
+  displayTrumpCard();
+
+  currentPhase = 'play';
+  updatePhaseDisplay();
+  console.log("Swapping done. Moving to phase:", currentPhase);
+}
+
+function playerPlaysCard(index) {
+  if (currentPhase !== 'play') return;
+  const playedCard = playerHand.splice(index, 1)[0];
+  lastPlayerCard = playedCard;
+  selectedCardIndex = null;
+  displayPlayerHand();
+  displayPlayArea();
+  setTimeout(() => botPlaysCard(playedCard), 1000);
+}
+
+function botPlaysCard(playerCard) {
+  const playerRank = playerCard.slice(0, -1);
+  const playerSuit = playerCard.slice(-1);
+  const trumpSuit = trumpCard ? trumpCard.slice(-1) : null;
+
+  let candidate = null;
+
+  // 1. Try to beat with same suit
+  const sameSuit = botHand
+    .filter(c => c.slice(-1) === playerSuit && ranks.indexOf(c.slice(0, -1)) > ranks.indexOf(playerRank))
+    .sort((a, b) => ranks.indexOf(a.slice(0, -1)) - ranks.indexOf(b.slice(0, -1)));
+  if (sameSuit.length > 0) {
+    candidate = sameSuit[0]; // lowest winning same-suit card
+  }
+
+  // 2. Use trump if can't beat with same suit
+  if (!candidate && trumpSuit) {
+    const trumpCards = botHand
+      .filter(c => c.slice(-1) === trumpSuit)
+      .sort((a, b) => ranks.indexOf(a.slice(0, -1)) - ranks.indexOf(b.slice(0, -1)));
+    if (trumpCards.length > 0) {
+      candidate = trumpCards[0]; // weakest trump
+    }
+  }
+
+  // 3. No winning card: play weakest card (to discard)
+  if (!candidate) {
+    candidate = botHand.sort((a, b) => ranks.indexOf(a.slice(0, -1)) - ranks.indexOf(b.slice(0, -1)))[0];
+  }
+
+  // Remove from hand and play
+  botHand.splice(botHand.indexOf(candidate), 1);
+  lastBotCard = candidate;
+  displayBotHand();
+  displayPlayArea();
+
+  const botWins = (
+    (candidate.slice(-1) === playerSuit && ranks.indexOf(candidate.slice(0, -1)) > ranks.indexOf(playerRank)) ||
+    (candidate.slice(-1) === trumpSuit && playerSuit !== trumpSuit)
+  );
+
+  if (botWins) playerScore--;
+  else botScore--;
+
+  updateScores();
+  setTimeout(() => {
+    lastPlayerCard = null;
+    lastBotCard = null;
+    displayPlayArea();
+    checkForGameEnd();
+  }, 1500);
+}
+
+
+function startPlay() {
+  if (currentPhase !== 'play') return;
+  alert("Play phase started. Click a card to play.");
+  console.log("Play phase active.");
+}
+
+function checkForGameEnd() {
+  if (playerScore <= 0) {
+    alert("Player loses the match!");
+  } else if (botScore <= 0) {
+    alert("Bot loses the match! You win!");
+  }
+}
+
+// Auto-run game setup when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('start-button').addEventListener('click', startGame);
+  document.getElementById('play-button').addEventListener('click', startPlay);
+  document.getElementById('swap-button').addEventListener('click', performSwap);
+  startGame();
+});
