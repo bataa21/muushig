@@ -5,11 +5,9 @@
 // --- Global Variables (from globals.js) ---
 // suits, ranks, deck, playerHand, botHand, trumpCard, playerScore, botScore, isPlayerTurn, currentPhase
 
-let selectedCardIndex = null;
+let selectedCardIndex = null; // for styling selected card
 let lastPlayerCard = null;
 let lastBotCard = null;
-let currentPhase = ''; // ← ADD THIS
-
 
 // --- Utility Functions ---
 function createDeck() {
@@ -90,6 +88,7 @@ function displayTrumpCard() {
 
 function displayPlayArea() {
   const playArea = document.getElementById('play-area');
+  if (!playArea) return;
   playArea.innerHTML = '';
 
   if (lastBotCard) {
@@ -171,44 +170,27 @@ function playerPlaysCard(index) {
 function botPlaysCard(playerCard) {
   const playerRank = playerCard.slice(0, -1);
   const playerSuit = playerCard.slice(-1);
-  const trumpSuit = trumpCard ? trumpCard.slice(-1) : null;
+  const trumpSuit = trumpCard?.slice(-1);
 
-  let candidate = null;
-
-  // 1. Try to beat with same suit
-  const sameSuit = botHand
-    .filter(c => c.slice(-1) === playerSuit && ranks.indexOf(c.slice(0, -1)) > ranks.indexOf(playerRank))
+  let options = botHand.filter(c => c.slice(-1) === playerSuit && ranks.indexOf(c.slice(0, -1)) > ranks.indexOf(playerRank))
     .sort((a, b) => ranks.indexOf(a.slice(0, -1)) - ranks.indexOf(b.slice(0, -1)));
-  if (sameSuit.length > 0) {
-    candidate = sameSuit[0]; // lowest winning same-suit card
-  }
 
-  // 2. Use trump if can't beat with same suit
-  if (!candidate && trumpSuit) {
-    const trumpCards = botHand
-      .filter(c => c.slice(-1) === trumpSuit)
+  if (options.length === 0 && trumpSuit) {
+    options = botHand.filter(c => c.slice(-1) === trumpSuit)
       .sort((a, b) => ranks.indexOf(a.slice(0, -1)) - ranks.indexOf(b.slice(0, -1)));
-    if (trumpCards.length > 0) {
-      candidate = trumpCards[0]; // weakest trump
-    }
   }
 
-  // 3. No winning card: play weakest card (to discard)
-  if (!candidate) {
-    candidate = botHand.sort((a, b) => ranks.indexOf(a.slice(0, -1)) - ranks.indexOf(b.slice(0, -1)))[0];
+  if (options.length === 0) {
+    options = botHand.sort((a, b) => ranks.indexOf(a.slice(0, -1)) - ranks.indexOf(b.slice(0, -1)));
   }
 
-  // Remove from hand and play
-  botHand.splice(botHand.indexOf(candidate), 1);
-  lastBotCard = candidate;
+  const botCard = options[0];
+  botHand.splice(botHand.indexOf(botCard), 1);
+  lastBotCard = botCard;
   displayBotHand();
   displayPlayArea();
 
-  const botWins = (
-    (candidate.slice(-1) === playerSuit && ranks.indexOf(candidate.slice(0, -1)) > ranks.indexOf(playerRank)) ||
-    (candidate.slice(-1) === trumpSuit && playerSuit !== trumpSuit)
-  );
-
+  const botWins = ranks.indexOf(botCard.slice(0, -1)) > ranks.indexOf(playerCard.slice(0, -1));
   if (botWins) playerScore--;
   else botScore--;
 
@@ -220,7 +202,6 @@ function botPlaysCard(playerCard) {
     checkForGameEnd();
   }, 1500);
 }
-
 
 function startPlay() {
   if (currentPhase !== 'play') return;
