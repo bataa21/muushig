@@ -1,69 +1,45 @@
-body {
-  margin: 0;
-  padding: 0;
-  background-color: green;
-  font-family: sans-serif;
-}
-#table {
-  width: 100vw;
-  height: 100vh;
-  position: relative;
-}
-.player {
-  position: absolute;
-  padding: 10px 20px;
-  background-color: rgba(255, 255, 255, 0.85);
-  border-radius: 12px;
-  text-align: center;
-  font-weight: bold;
-}
-#player-top {
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-#player-bottom {
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-#center-area {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-}
-#deck, #trump-card {
-  font-size: 40px;
-  display: inline-block;
-  margin: 10px;
-}
-.hand {
-  margin-top: 10px;
-  font-size: 28px;
-  letter-spacing: 8px;
-}
-#flying-card {
-  position: absolute;
-  top: 0;
-  left: 0;
-  font-size: 32px;
-  pointer-events: none;
-  opacity: 0;
-  transition: all 0.5s ease;
-}
-#round-play {
-  margin-top: 20px;
+#game-board {
   display: flex;
-  justify-content: center;
-  gap: 50px;
-  font-size: 30px;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
 }
-#played-by-player, #played-by-bot {
-  min-width: 60px;
-  text-align: center;
-  background-color: white;
-  padding: 8px;
-  border-radius: 8px;
+
+#bot-hand {
+  margin-top: 20px;
+}
+
+#middle-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px 0;
+}
+
+#deck-area {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  justify-content: center;
+}
+
+#play-area {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 15px;
+  min-height: 80px;
+}
+
+#player-hand {
+  margin-bottom: 20px;
+}
+
+#scoreboard {
+  margin: 5px;
+  font-weight: bold;
+  color: yellow;
+}
+
+.controls button {
+  margin: 5px;
 }
