@@ -2,37 +2,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Muushig 2-Player Game</title>
   <link rel="stylesheet" href="muushig.css" />
 </head>
 <body>
   <div id="game-board">
-  <div id="bot-hand" class="hand-row"></div>
+    <h1>Muushig 2-Player Game</h1>
+    <div id="scoreboard">Бот: 15 | Тоглогч: 15</div>
+    <div id="phase-label">SWAP</div>
+    <div id="status-label">...</div>
 
-  <div id="middle-area">
-    <div id="deck-area">
-      <img id="deck" class="card" src="cards/back.png" alt="Deck">
-      <img id="trump" class="card" src="" alt="Trump">
+    <div id="bot-hand" class="hand-row"></div>
+
+    <div id="center-area">
+      <img id="deck" src="cards/back.png" alt="Deck" class="card" />
+      <img id="trump" src="cards/9C.png" alt="Trump" class="card" />
     </div>
-
-    <div id="play-area" class="hand-row"></div>
 
     <div class="controls">
-      <button id="start-button">ТОГЛО</button>
-      <button id="swap-button">СОЛИХ</button>
-      <button id="play-button">ШИНЭ</button>
+     <button id="start-button">ШИНЭ</button>
+<button id="play-button">ТОГЛО</button>
+<button id="swap-button">СОЛИХ</button>
+
     </div>
 
-    <div id="scoreboard">
-      Бот: <span id="bot-score">15</span> | Тоглогч: <span id="player-score">15</span>
-    </div>
-    <div id="phase-indicator">...</div>
+    <div id="player-hand" class="hand-row"></div>
+    <div id="play-area" class="hand-row"></div>
   </div>
-
-  <div id="player-hand" class="hand-row"></div>
-</div>
-
 
   <script src="globals.js"></script>
   <script src="muushig_game.js"></script>
