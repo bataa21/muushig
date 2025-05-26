@@ -2,7 +2,7 @@
 // Muushig 2-Player Game Logic
 // ==============================
 
-let selectedCardIndex = null; // for styling selected card
+var selectedCardIndex = null; // for styling selected card
 let lastPlayerCard = null;
 let lastBotCard = null;
 
@@ -30,8 +30,10 @@ function dealCards() {
 }
 
 function updateScores() {
-  document.getElementById('player-score').innerText = playerScore;
-  document.getElementById('bot-score').innerText = botScore;
+  const playerScoreEl = document.getElementById('player-score');
+  const botScoreEl = document.getElementById('bot-score');
+  if (playerScoreEl) playerScoreEl.innerText = playerScore;
+  if (botScoreEl) botScoreEl.innerText = botScore;
 }
 
 function updatePhaseDisplay() {
@@ -74,10 +76,10 @@ function displayBotHand() {
 
 function displayTrumpCard() {
   const trumpImg = document.getElementById('trump');
-  if (trumpCard) {
+  if (trumpCard && trumpImg) {
     trumpImg.src = `cards/${trumpCard}.png?v=${Date.now()}`;
     trumpImg.alt = trumpCard;
-  } else {
+  } else if (trumpImg) {
     trumpImg.src = '';
     trumpImg.alt = '';
   }
