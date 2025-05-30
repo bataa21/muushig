@@ -1,140 +1,67 @@
-// === Global Variables ===
+// play_phase.js
 
-// === Utility Functions ===
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+function playerPlaysCard(index) {
+  if (!isPlayerTurn || index < 0 || index >= playerHand.length) return;
+
+  const playedCard = playerHand.splice(index, 1)[0];
+  console.log(`Player plays: ${playedCard}`);
+
+  const botResponse = botResponds(playedCard);
+  resolveTrick(playedCard, botResponse);
+}
+
+function botResponds(leadCard) {
+  // Bot looks for higher same-suit card or uses trump, else lowest card
+  const leadSuit = leadCard.slice(-1);
+  let choices = botHand.filter(c => c.slice(-1) === leadSuit && cardValue(c) > cardValue(leadCard));
+
+  if (choices.length === 0) {
+    choices = botHand.filter(c => trumpCard && c.slice(-1) === trumpCard.slice(-1));
   }
+
+  const chosen = choices.length > 0 ? choices[0] : findLowestCard(botHand);
+  botHand.splice(botHand.indexOf(chosen), 1);
+
+  console.log(`Bot responds with: ${chosen}`);
+  return chosen;
 }
 
-function getCardValue(card) {
-  const rank = card.slice(0, -1);
-  return ['7','8','9','10','J','Q','K','A'].indexOf(rank);
-}
-
-function getCardSuit(card) {
-  return card.slice(-1);
-}
-
-// === Game Setup ===
-function initializeDeck() {
-  const suits = ['C','D','H','S'];
-  const ranks = ['7','8','9','10','J','Q','K','A'];
-  deck = [];
-  for (let suit of suits) {
-    for (let rank of ranks) {
-      deck.push(rank + suit);
-    }
-  }
-  shuffle(deck);
-}
-
-function dealCards() {
-  playerHand = deck.splice(0, 5);
-  botHand = deck.splice(0, 5);
-  trumpCard = deck.shift();
-}
-
-function renderHands() {
-  const playerDiv = document.getElementById('player-hand');
-  const botDiv = document.getElementById('bot-hand');
-  const trumpDiv = document.getElementById('trump-card');
-
-  playerDiv.innerHTML = '';
-  botDiv.innerHTML = '';
-
-  playerHand.forEach(card => {
-    const img = document.createElement('img');
-    img.src = `cards/${card}.png`;
-    img.className = 'card';
-    img.onclick = () => playerPlay(card);
-    playerDiv.appendChild(img);
-  });
-
-  botHand.forEach(() => {
-    const img = document.createElement('img');
-    img.src = 'cards/card-back.png';
-    img.className = 'card';
-    botDiv.appendChild(img);
-  });
-
-  trumpDiv.src = `cards/${trumpCard}.png`;
-  deckDiv.src = 'cards/card-back.png';
-}
-
-function updateScores() {
-  document.getElementById('player-score').textContent = `Тоглогч: ${playerScore}`;
-  document.getElementById('bot-score').textContent = `Бот: ${botScore}`;
-}
-
-// === Play Phase Logic ===
-function playerPlay(card) {
-  const playArea = document.getElementById('play-area');
-  playArea.innerHTML = '';
-
-  const playerImg = document.createElement('img');
-  playerImg.src = `cards/${card}.png`;
-  playerImg.className = 'card';
-  playArea.appendChild(playerImg);
-
-  playerHand = playerHand.filter(c => c !== card);
-
-  const botCard = botRespond(card);
-  const botImg = document.createElement('img');
-  botImg.src = `cards/${botCard}.png`;
-  botImg.className = 'card';
-  playArea.appendChild(botImg);
-
-  botHand = botHand.filter(c => c !== botCard);
-
-  evaluateTrick(card, botCard);
-  renderHands();
-  updateScores();
-  checkRoundEnd();
-}
-
-function botRespond(playerCard) {
-  const playerSuit = getCardSuit(playerCard);
-  const playerVal = getCardValue(playerCard);
-
-  let beatable = botHand.filter(c => getCardSuit(c) === playerSuit && getCardValue(c) > playerVal);
-  if (beatable.length) return beatable[0];
-
-  let trumps = botHand.filter(c => getCardSuit(c) === getCardSuit(trumpCard));
-  if (trumps.length) return trumps[0];
-
-  return botHand[0];
-}
-
-function evaluateTrick(playerCard, botCard) {
-  const trumpSuit = getCardSuit(trumpCard);
-  const pSuit = getCardSuit(playerCard);
-  const bSuit = getCardSuit(botCard);
-  const pVal = getCardValue(playerCard);
-  const bVal = getCardValue(botCard);
-
-  if (bSuit === pSuit && bVal > pVal || bSuit === trumpSuit && pSuit !== trumpSuit) {
-    playerScore--;
-  } else {
+function resolveTrick(playerCard, botCard) {
+  const playerWins = compareCards(playerCard, botCard);
+  if (playerWins) {
+    console.log("Player wins trick");
     botScore--;
+  } else {
+    console.log("Bot wins trick");
+    playerScore--;
   }
-}
 
-function checkRoundEnd() {
-  if (playerHand.length === 0) {
-    if (playerScore <= 0 || botScore <= 0 || playerScore <= -5 || botScore <= -5) {
-      alert(playerScore <= 0 ? "Тоглогч хожлоо!" : "Бот хожлоо!");
-    } else {
-      startGame();
-    }
-  }
-}
-
-function startGame() {
-  initializeDeck();
-  dealCards();
-  renderHands();
   updateScores();
-  document.getElementById('play-area').innerHTML = '';
+  displayPlayerHand();
+  displayBotHand();
+
+  isPlayerTurn = playerWins;
+  checkForGameEnd();
+}
+
+function compareCards(cardA, cardB) {
+  const suitA = cardA.slice(-1);
+  const suitB = cardB.slice(-1);
+  const rankA = cardValue(cardA);
+  const rankB = cardValue(cardB);
+  const trumpSuit = trumpCard ? trumpCard.slice(-1) : null;
+
+  if (suitA === suitB) return rankA > rankB;
+  if (suitA === trumpSuit && suitB !== trumpSuit) return true;
+  if (suitB === trumpSuit && suitA !== trumpSuit) return false;
+  return false;
+}
+
+function cardValue(card) {
+  const rank = card.slice(0, -1);
+  return ranks.indexOf(rank);
+}
+
+function findLowestCard(hand) {
+  return hand.reduce((minCard, c) => cardValue(c) < cardValue(minCard) ? c : minCard);
 }

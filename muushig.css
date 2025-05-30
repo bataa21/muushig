@@ -1,3 +1,12 @@
+body {
+  background-color: white;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  color: #222;
+  margin: 0;
+  padding: 0;
+}
+
 #game-board {
   display: flex;
   flex-direction: column;
@@ -5,41 +14,59 @@
   padding: 10px;
 }
 
-#bot-hand {
-  margin-top: 20px;
+h1 {
+  color: gold;
+  margin-bottom: 5px;
 }
 
-#middle-area {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 20px 0;
-}
-
-#deck-area {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
-  justify-content: center;
-}
-
-#play-area {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 15px;
-  min-height: 80px;
-}
-
-#player-hand {
-  margin-bottom: 20px;
-}
-
-#scoreboard {
+#scoreboard, #phase-label, #status-label {
   margin: 5px;
   font-weight: bold;
-  color: yellow;
+  color: goldenrod;
 }
 
-.controls button {
-  margin: 5px;
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+button {
+  padding: 5px 15px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.hand-row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+#center-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin: 10px;
+}
+
+.card {
+  width: 60px;
+  height: auto;
+}
+
+.selected {
+  border: 2px solid yellow;
+  box-shadow: 0 0 10px yellow;
+}
+.play-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin: 10px auto;
 }
