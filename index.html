@@ -10,7 +10,9 @@
     --accent:#f59e0b; --accent-2:#38bdf8; --danger:#ef4444;
     --card-shadow: 0 10px 24px rgba(0,0,0,.35);
     --glass: blur(8px) saturate(120%); --radius: 14px;
-    --deck-img: url('cards/back.png'); /* card back */
+    --deck-img: url('cards/back.png');
+    --card-width: 78px;
+    --card-height: 117px;
   }
   .theme-light{
     --bg:#f3f4f6; --panel:#ffffffcc; --text:#111827; --muted:#6b7280;
@@ -26,67 +28,66 @@
   }
   .container{ max-width: 980px; margin:0 auto; }
 
-  /* === Welcome / Start Screen (opaque, clean) === */
-  .welcome-screen{
-    position:fixed; inset:0;
-    display:flex; justify-content:center; align-items:center;
-    z-index:1000;
-    background: var(--bg);
-    opacity:1; transition:opacity .6s ease;
-  }
+  /* Welcome */
+  .welcome-screen{ position:fixed; inset:0; display:flex; justify-content:center; align-items:center; z-index:1000; background: var(--bg); opacity:1; transition:opacity .6s ease; }
   .welcome-screen.hidden{ opacity:0; pointer-events:none; }
-
   .welcome-card{
-    background:#0f172a;
-    border:1px solid rgba(255,255,255,.12);
-    border-radius:22px;
-    padding:36px 32px;
-    width:min(760px,92%);
-    text-align:center;
-    box-shadow: 0 16px 40px rgba(0,0,0,.45);
+    background:#0f172a; border:1px solid rgba(255,255,255,.12); border-radius:22px; padding:36px 32px;
+    width:min(760px,92%); text-align:center; box-shadow: 0 16px 40px rgba(0,0,0,.45);
   }
-  .theme-light .welcome-card{
-    background:#ffffff;
-    border-color: rgba(17,24,39,.12);
-  }
+  .theme-light .welcome-card{ background:#ffffff; border-color: rgba(17,24,39,.12); }
   .welcome-card h1{ margin:0 0 8px; font-size:40px; letter-spacing:.4px }
   .welcome-card .sub{ margin:0 0 18px; font-size:16px; color:var(--muted) }
   .card-preview{ display:flex; justify-content:center; gap:20px; margin:14px 0 26px }
-  .preview-card{
-    width:86px; height:130px; border-radius:12px;
-    background-size:contain; background-repeat:no-repeat;
-    box-shadow: 0 10px 22px rgba(0,0,0,.35);
-    transform:rotate(-1.5deg); transition:.28s;
-  }
+  .preview-card{ width:86px; height:130px; border-radius:12px; background-size:contain; background-repeat:no-repeat; box-shadow: 0 10px 22px rgba(0,0,0,.35); transform:rotate(-1.5deg); transition:.28s; }
   .preview-card:nth-child(2){ transform:rotate(1.2deg) }
   .preview-card:nth-child(3){ transform:rotate(-2.4deg) }
   .preview-card:nth-child(4){ transform:rotate(.8deg) }
   .preview-card:hover{ transform:translateY(-6px) scale(1.03) }
-  .welcome-card .btn{
-    appearance:none;border:0;cursor:pointer;
-    padding:12px 22px; font-size:16px; border-radius:14px; font-weight:700; color:#0b1220;
-    background: linear-gradient(180deg, #ffe08a, #f59e0b);
-    box-shadow: 0 12px 28px rgba(245,158,11,.35);
-  }
+  .welcome-card .btn{ appearance:none;border:0;cursor:pointer; padding:12px 22px; font-size:16px; border-radius:14px; font-weight:700; color:#0b1220; background: linear-gradient(180deg, #ffe08a, #f59e0b); box-shadow: 0 12px 28px rgba(245,158,11,.35); }
   .welcome-card .btn:hover{ filter:brightness(1.04) }
-
-  /* Hide HUD + board while welcome is visible */
   body.showing-welcome .hud, body.showing-welcome .board { display:none; }
 
   /* HUD */
   .hud{display:flex;align-items:center;justify-content:space-between; gap:10px;margin:0 auto 12px; width:min(980px,100%)}
+  /* Player score (left) and Bot score (in .right) stay on the first row */
+  .hud .score{ font-weight: 700; }
+  .hud .score small{ font-size: 13px; }
+  .hud .score span{ font-size: 18px; }
+
+  /* Round • Trick badge sits centered and can break line */
+  .hud > .badge:nth-child(2){
+    flex: 0 1 100%;
+    text-align: center;
+    justify-content: center;
+    display: inline-flex;
+    gap: 6px;
+    order: 2;              /* move to second row for balance */
+  }
+
+  /* The right cluster (bot score + switches) stays tidy */
+  .right{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    order: 1;              /* keep it on the first row */
+  }
+
+  .select{ padding: 5px 8px; font-size: 14px; border-radius: 9px; }
+  .toggle.badge{ padding: 5px 8px; }
+
+  /* tighten the board margins a bit so HUD isn't clipped */
+  .board{ padding-top: 8px; }
+
+  /* compact badges */
   .badge{
-    background: var(--panel); -webkit-backdrop-filter: var(--glass); backdrop-filter: var(--glass);
-    border:1px solid rgba(255,255,255,.12); border-radius: 12px; padding:8px 12px; box-shadow: var(--card-shadow);
+    padding: 6px 8px;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.1;
   }
   .score{display:flex;align-items:center;gap:8px;font-weight:700}
   .score small{color:var(--muted);font-weight:600}
-  .score-glow{animation:scoreGlow .6s ease}
-  @keyframes scoreGlow{
-    0%{ text-shadow:0 0 0 rgba(245,158,11,0)}
-    40%{ text-shadow:0 0 18px rgba(245,158,11,.9)}
-    100%{ text-shadow:0 0 0 rgba(245,158,11,0)}
-  }
   .dealer{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;background:rgba(250,204,21,.12);border:1px solid rgba(250,204,21,.35);color:#facc15;font-weight:700}
   .right{display:flex;align-items:center;gap:10px}
   .select{appearance:none;background: var(--panel); border:1px solid rgba(255,255,255,.12); color:var(--text); padding:6px 10px; border-radius:10px}
@@ -103,47 +104,53 @@
   }
   .bar{ text-align:center;font-weight:800;letter-spacing:.3px;margin:6px 0 4px;color:var(--accent-2) }
 
-  .row{display:flex;justify-content:center;align-items:center;gap:8px;min-height:120px;margin:4px 0}
-  #bot-hand, #player-hand{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+  .row{display:flex;justify-content:center;align-items:center;gap:12px;min-height:120px;margin:4px 0}
+  #bot-hand, #player-hand{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:nowrap} /* keep 5-in-row */
 
   .center-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;margin:4px 0 8px}
   .trump-badge{
     display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;
     background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.35);
-    transition:.2s background,.2s border-color,.2s color;
   }
   .trump-badge b{font-weight:800;color:var(--accent-2)}
   .trump-badge[data-suit="H"], .trump-badge[data-suit="D"]{ background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.45) }
   .trump-badge[data-suit="H"] b, .trump-badge[data-suit="D"] b{ color: var(--danger) }
 
-  /* Deck + trump (clean — no halos) */
   #trump-card-container{ position:relative; height:126px; box-shadow:none; background:transparent; }
+
+  /* Stacked deck (3 layers) */
   #deck{
     position:absolute; top:6px; left:calc(50% - 28px); transform:translateX(-50%);
-    width:78px; height:117px; background-image:var(--deck-img);
-    background-size:contain; background-repeat:no-repeat;
+    width:var(--card-width); height:var(--card-height); background-image:var(--deck-img);
+    background-size:contain; background-repeat:no-repeat; background-position:center;
     z-index:2; user-select:none; pointer-events:none; opacity:.98;
     transition: transform .12s ease; filter:none; box-shadow:none;
   }
   #deck::before, #deck::after{
     content:""; position:absolute; inset:0; border-radius:10px;
-    background-image:var(--deck-img); background-size:contain; background-repeat:no-repeat;
+    background-image:var(--deck-img); background-size:contain; background-repeat:no-repeat; background-position:center;
     will-change: transform, opacity; filter:none;
   }
   #deck::before{ transform: translate(4px, 4px) rotate(.4deg); opacity:1 }
   #deck::after { transform: translate(8px, 8px) rotate(.8deg); opacity:1 }
-  #deck.deck-pop       { transform: translateX(-50%) translateY(-6px) }
+  #deck.deck-pop{ transform: translateX(-50%) translateY(-6px) }
   #deck.deck-pop::before{ transform: translate(5px, 6px) rotate(.45deg) }
   #deck.deck-pop::after { transform: translate(9px,10px) rotate(.9deg)  }
 
   #trump-card{
     position:absolute;top:6px;left:calc(50% + 28px);transform:translateX(-50%);
-    width:78px;height:117px;z-index:3;background:transparent;
-    box-shadow:none; filter:none; display:none;
+    width:var(--card-width);height:var(--card-height);z-index:3;background:transparent;
+    box-shadow:none; filter:none;
   }
 
   /* Cards */
-  .card{width:78px;height:117px;background-size:contain;background-repeat:no-repeat;border-radius:10px;box-shadow: var(--card-shadow);transition:.22s transform, .2s filter, .2s box-shadow;cursor:pointer}
+  .card{
+    width:var(--card-width);height:var(--card-height);border-radius:10px;box-shadow: var(--card-shadow);
+    transition:.22s transform, .2s filter, .2s box-shadow;
+    cursor:pointer; flex:0 0 auto;             /* don't stretch */
+    background-color: rgba(0,0,0,.25);          /* dark placeholder to kill white flash */
+    background-size: contain; background-repeat:no-repeat; background-position:center;
+  }
   #player-hand .card:hover{transform:translateY(-7px) rotate(-.7deg)}
   #player-hand .card:active{transform:translateY(-2px) scale(.98)}
   .card.selected{transform:translateY(-12px) scale(1.02); box-shadow:0 0 0 3px rgba(245,158,11,.85), var(--card-shadow)}
@@ -153,10 +160,7 @@
 
   #played-cards{display:flex;justify-content:center;gap:18px;min-height:120px;position:relative}
   .trick-out{ animation: trickCollect .35s ease forwards; }
-  @keyframes trickCollect{
-    0%{ transform:translate(0,0) scale(1); opacity:1 }
-    100%{ transform:translate(0,-12px) scale(.88); opacity:0 }
-  }
+  @keyframes trickCollect{ 0%{ transform:translate(0,0) scale(1); opacity:1 } 100%{ transform:translate(0,-12px) scale(.88); opacity:0 } }
 
   /* Controls */
   .controls{display:flex;justify-content:center;gap:10px;margin:8px 0 2px;flex-wrap:wrap}
@@ -164,14 +168,12 @@
   .btn-ghost:disabled{opacity:.45;cursor:not-allowed}
   .message{text-align:center;font-weight:800;color:var(--accent);margin:8px 0 0}
 
-  /* Deal from the stack */
+  /* Deal animation */
   @keyframes dealFromDeck {
     0%   { transform: translate(var(--fromX), var(--fromY)) scale(.96) rotate(var(--fromR,0deg)); opacity: 0 }
     100% { transform: translate(0,0) scale(1) rotate(0deg); opacity: 1 }
   }
   .deal-from-deck { animation: dealFromDeck .38s ease-out forwards }
-
-  /* Trump flip reveal */
   @keyframes flipReveal {
     0%   { transform: translateX(-50%) rotateY(90deg); opacity: 0 }
     50%  { transform: translateX(-50%) rotateY(10deg);  opacity: .85 }
@@ -179,121 +181,124 @@
   }
   .trump-flip { animation: flipReveal .35s ease-out forwards }
 
-  /* ===== End-of-game Overlay ===== */
-  .end-overlay{
-    position:fixed; inset:0; z-index:2000;
-    display:none; align-items:center; justify-content:center;
-    background: radial-gradient(1200px 800px at 50% -10%, rgba(0,0,0,.65), rgba(0,0,0,.85));
+  /* ===== Responsive (keep 5-in-row by shrinking cards) ===== */
+
+  /* Large phones - shrink cards a bit, keep one row */
+  @media (max-width: 768px) {
+    :root {
+      --card-width: 70px;
+      --card-height: 105px;
+    }
+    
+    .row {
+      gap: 8px;
+      min-height: 110px;
+    }
+    
+    #bot-hand, #player-hand {
+      gap: 8px;
+    }
+    
+    #trump-card-container {
+      height: 112px;
+    }
   }
-  .end-overlay.show{ display:flex; }
-  .end-card{
-    width:min(640px,92%); text-align:center; padding:28px 24px;
-    border-radius:20px; background:#0f172a; color:#e5e7eb;
-    border:1px solid rgba(255,255,255,.12); box-shadow:0 20px 50px rgba(0,0,0,.55);
-    transform:scale(.96); animation:popIn .28s ease forwards;
+
+  /* Medium phones */
+  @media (max-width: 540px) {
+    :root {
+      --card-width: 62px;
+      --card-height: 93px;
+    }
+    
+    .row {
+      gap: 6px;
+      min-height: 100px;
+    }
+    
+    #bot-hand, #player-hand {
+      gap: 6px;
+    }
+    
+    #trump-card-container {
+      height: 100px;
+    }
+    
+    /* allow wrap + keep things centered */
+    .hud{
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px 8px;
+    }
   }
-  .theme-light .end-card{ background:#ffffff; color:#111827; border-color:rgba(17,24,39,.12); }
-  .end-title{ font-size:32px; font-weight:900; margin:0 0 8px; letter-spacing:.2px }
-  .end-sub{ margin:0 0 18px; color:#9ca3af }
-  .theme-light .end-sub{ color:#6b7280 }
-  .end-actions{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap }
-  .btn-primary{
-    padding:12px 18px; border-radius:14px; border:0; cursor:pointer; font-weight:800;
-    color:#0b1220; background:linear-gradient(180deg, #a7f3d0, #34d399); 
-    box-shadow:0 12px 28px rgba(16,185,129,.35);
+
+  /* Small phones */
+  @media (max-width: 450px) {
+    :root {
+      --card-width: 56px;
+      --card-height: 84px;
+    }
+    
+    .row {
+      gap: 4px;
+      min-height: 90px;
+    }
+    
+    #bot-hand, #player-hand {
+      gap: 4px;
+    }
+    
+    #trump-card-container {
+      height: 90px;
+    }
+    
+    .hud { gap: 6px; }
+    .badge { padding: 6px 8px; border-radius: 10px; }
+    .dealer { padding: 3px 7px; font-size: 12px; }
+    .bar { margin: 4px 0; }
+    .board { padding: 10px 8px; }
+    .controls { gap:8px; }
   }
-  .btn-ghost2{
-    padding:10px 16px; border-radius:12px; border:1px solid rgba(255,255,255,.2);
-    background:transparent; color:inherit; cursor:pointer;
+
+  /* Very small phones (iPhone SE, etc) */
+  @media (max-width: 390px) {
+    :root {
+      --card-width: 52px;
+      --card-height: 78px;
+    }
+    
+    .badge{ font-size: 13px; padding: 5px 7px; }
+    .hud .score span{ font-size: 16px; }
+    .select{ font-size: 13px; padding: 4px 7px; }
+    .toggle.badge{ font-size: 13px; }
   }
-  @keyframes popIn{ to{ transform:scale(1)} }
 
-  /* Confetti canvas sits behind the card but above board */
-  #confetti-wrap{ position:fixed; inset:0; z-index:1999; pointer-events:none; display:none; }
-  #confetti-wrap.show{ display:block; }
-  #confetti{ width:100%; height:100%; display:block; }
-
-  /* Responsive */
-  @media (max-width: 900px){
-    .card,#deck,#trump-card{width:72px;height:108px}
-    .row{min-height:110px}
+  /* Ultra-tiny screens: allow wrap as last resort */
+  @media (max-width: 340px) {
+    :root {
+      --card-width: 48px;
+      --card-height: 72px;
+    }
+    
+    #player-hand, #bot-hand { flex-wrap: wrap; gap: 8px; }
+    #player-hand .card, #bot-hand .card { flex: 0 0 auto; }
   }
-  @media (max-width: 520px){
-    .card,#deck,#trump-card{width:62px;height:93px}
-    .row{min-height:100px}
-    #player-hand{max-width: 92%; margin:0 auto; gap:8px; }
-    #player-hand .card{flex: 1 0 calc(50% - 8px);}
+
+  /* Better centering for the deck vs trump on ALL sizes */
+  #deck{
+    left: calc(50% - var(--card-width) * 0.5);
+    transform: translateX(-50%);
   }
-  /* =========================================================
-   MOBILE RESPONSIVE PATCH (drop-in)
-   Targets small phones (≤450px), very small (≤380px),
-   and short screens in portrait.
-   ========================================================= */
-
-/* 1) Compact HUD & badges on small phones */
-@media (max-width: 450px) {
-  .hud { gap: 6px; }
-  .badge { padding: 6px 8px; border-radius: 10px; }
-  .score small { font-size: 12px; }
-  .dealer { padding: 3px 7px; font-size: 12px; }
-  .bar { margin: 4px 0; }
-}
-
-/* 2) Card + deck sizes, gaps, and row heights */
-@media (max-width: 450px) {
-  .card, #deck, #trump-card { width: 58px; height: 87px; }
-  .row { min-height: 96px; }
-  #bot-hand, #player-hand { gap: 8px; }
-  #played-cards { gap: 12px; min-height: 90px; }
-  .center-wrap { gap: 4px; }
-  .trump-badge { padding: 5px 8px; gap: 6px; }
-  .trump-badge .tricks { display: none; } /* hide per-trick counters */
-}
-
-/* 3) Very small phones (≤380px) */
-@media (max-width: 380px) {
-  .card, #deck, #trump-card { width: 54px; height: 81px; }
-  #bot-hand, #player-hand { gap: 6px; }
-  #played-cards { gap: 10px; min-height: 84px; }
-  .controls { gap: 6px; }
-  .btn-ghost { padding: 7px 10px; border-radius: 10px; font-size: 14px; }
-  .message { font-size: 13px; }
-}
-
-/* 4) Ensure hands wrap cleanly and stay centered */
-@media (max-width: 450px) {
-  #player-hand, #bot-hand {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    max-width: 100%;
-    margin: 0 auto;
+  #trump-card{
+    left: calc(50% + var(--card-width) * 0.5);
+    transform: translateX(-50%);
   }
-  #player-hand .card, #bot-hand .card {
-    flex: 0 0 auto; /* keep intrinsic width */
+
+  /* Optional: iOS webview safe area (helps in Messenger/Safari) */
+  @supports (padding: max(0px)){
+    body{ padding-top: calc(16px + env(safe-area-inset-top, 0px)); }
   }
-}
-
-/* 5) Short portrait screens */
-@media (orientation: portrait) and (max-height: 700px) {
-  .card, #deck, #trump-card { width: 52px; height: 78px; }
-  .row { min-height: 86px; }
-  #played-cards { min-height: 78px; }
-  .welcome-card { padding: 28px 22px; }
-}
-
-/* 6) Keep controls visible & tighter on mobile */
-@media (max-width: 450px) {
-  .controls { margin: 6px 0 0; flex-wrap: nowrap; justify-content: center; }
-  .controls .btn-ghost { padding: 7px 10px; }
-}
-
-/* 7) Panel padding */
-@media (max-width: 450px) {
-  .board { padding: 10px 8px; }
-}
-
 </style>
 </head>
 <body class="showing-welcome">
@@ -349,9 +354,7 @@
   <div class="board">
     <div id="turn-banner" class="bar">Starting new game…</div>
 
-    <div class="row" id="bot-area">
-      <div id="bot-hand"></div>
-    </div>
+    <div class="row" id="bot-area"><div id="bot-hand"></div></div>
 
     <div class="center-wrap">
       <div id="trump-badge" class="trump-badge">
@@ -365,9 +368,7 @@
       <div id="played-cards"></div>
     </div>
 
-    <div class="row" id="player-area">
-      <div id="player-hand"></div>
-    </div>
+    <div class="row" id="player-area"><div id="player-hand"></div></div>
 
     <div class="controls">
       <button id="swap-btn" class="btn-ghost" disabled data-i18n="swap">Swap</button>
@@ -375,21 +376,6 @@
       <button id="new-game-btn" class="btn-ghost" data-i18n="newGame">New Game</button>
     </div>
     <div id="message" class="message"></div>
-  </div>
-</div>
-
-<!-- Confetti layer (shown only on player win) -->
-<div id="confetti-wrap"><canvas id="confetti"></canvas></div>
-
-<!-- End-of-game overlay -->
-<div id="end-overlay" class="end-overlay" role="dialog" aria-modal="true">
-  <div class="end-card">
-    <h2 id="end-title" class="end-title">🎉 You won!</h2>
-    <p id="end-sub" class="end-sub">Great game. Want to play again?</p>
-    <div class="end-actions">
-      <button id="play-again-btn" class="btn-primary">Play Again</button>
-      <button id="close-overlay-btn" class="btn-ghost2">Close</button>
-    </div>
   </div>
 </div>
 
@@ -424,109 +410,53 @@ document.addEventListener('DOMContentLoaded', () => {
         banner_your_turn: "Your turn",
         banner_you_picked: "You picked up the trump {sym}",
         banner_bot_picked: "Bot picked up the trump {sym}",
-        banner_next_round: "",
+        banner_direct_play: "Direct play — skipping swap.",
+        banner_next_round: "Next round…",
         must_follow: "You must follow suit: {sym}.",
         must_trump: "You must play a trump ({sym}).",
         you_won: "🎉 You won the game!",
-        bot_won: "Bot won the game.",
-        you_lost_try: "You lost — try next time!",
-        play_again: "Play Again",
-        close: "Close"
+        bot_won: "Bot won the game."
       },
       mn: {
-        title: "Муушиг",
-        subtitle: "Идээд тат! Ар нь түүз. Муушигт тавтай морил!",
-        start: "Тоглоом эхлүүлэх",
-        player: "Тоглогч",
-        bot: "Бот",
-        dealer: "Тараагч",
-        trump: "Хөзөр:",
-        sfx: "Дуу",
-        themeDark: "Бараан",
-        themeLight: "Гэгээн",
-        swap: "Солих",
-        directPlay: "Шууд тоглох",
-        newGame: "Шинэ тоглоом",
-        round: "Гараа {n}",
-        trick: "Гаралт {n}/5",
-        banner_starting: "Шинэ тоглоом эхэлж байна…",
-        banner_swap_prompt: "1–5 хөзөр сонгоод “Солих” товчийг дар",
-        banner_pickup_prompt: "Хаях хөзрөө сонгоод газрын мод дээр дарна уу",
-        banner_bot_leads: "Бот эхлэж гарна",
-        banner_you_lead: "Таны ээлж",
-        banner_bots_turn: "Ботын ээлж",
-        banner_your_turn: "Таны ээлж",
-        banner_you_picked: "Та хөзөр авлаа {sym}",
-        banner_bot_picked: "Бот хөзөр авлаа {sym}",
-        banner_next_round: "",
-        must_follow: "Та өнгө дагах ёстой: {sym}.",
-        must_trump: "Хөзөр тавих ёстой ({sym}).",
-        you_won: "🎉 Та хожлоо!",
-        bot_won: "Бот хожлоо.",
-        you_lost_try: "Та хожигдлоо — дараа дахин оролдож үзээрэй!",
-        play_again: "Дахин тоглох",
-        close: "Хаах"
+        title:"Муушиг", subtitle:"Идээд тат! Ар нь түүз. Муушигт тавтай морил!",
+        start:"Тоглоом эхлүүлэх", player:"Тоглогч", bot:"Бот", dealer:"Тараагч",
+        trump:"Хөзөр:", sfx:"Дуу", themeDark:"Бараан", themeLight:"Гэгээн",
+        swap:"Солих", directPlay:"Шууд тоглох", newGame:"Шинэ тоглоом",
+        round:"Гараа {n}", trick:"Гаралт {n}/5",
+        banner_starting:"Шинэ тоглоом эхэлж байна…",
+        banner_swap_prompt:"1–5 хөзөр сонгоод “Солих” товчийг дар",
+        banner_pickup_prompt:"Хаях хөзрөө сонгоод газрын мод дээр дарна уу",
+        banner_bot_leads:"Бот эхлэж гарна", banner_you_lead:"Таны ээлж",
+        banner_bots_turn:"Ботын ээлж", banner_your_turn:"Таны ээлж",
+        banner_you_picked:"Та хөзөр авлаа {sym}", banner_bot_picked:"Бот хөзөр авлаа {sym}",
+        banner_next_round:"Дараагийн гараа…",
+        must_follow:"Та өнгө дагах ёстой: {sym}.",
+        must_trump:"Хөзөр тавих ёстой ({sym}).",
+        you_won:"🎉 Та хожлоо!", bot_won:"Бот хожлоо."
       },
       ru: {
-        title: "Муушик",
-        subtitle: "Быстрая и ловкая дуэль со взятками. Меняйтесь картами, подбирайте козыри и тяните козыри соперника!",
-        start: "Начать игру",
-        player: "Игрок",
-        bot: "Бот",
-        dealer: "Дилер",
-        trump: "Козырь:",
-        sfx: "Звук",
-        themeDark: "Тёмная",
-        themeLight: "Светлая",
-        swap: "Обмен",
-        directPlay: "Играть немедленно",
-        newGame: "Новая игра",
-        round: "Раунд {n}",
-        trick: "Трюки {n}/5",
-        banner_starting: "Начинается новая игра…",
-        banner_swap_prompt: "Выберите от 1 до 5 карт и нажмите «Обмен».",
-        banner_pickup_prompt: "Выберите карту для сброса, затем нажмите на козырную карту.",
-        banner_bot_leads: "Бот начинает игру",
-        banner_you_lead: "Ваш ход",
-        banner_bots_turn: "Ход бота",
-        banner_your_turn: "Ваш ход",
-        banner_you_picked: "Вы взяли козырь {sym}",
-        banner_bot_picked: "Бот взял козырь {sym}",
-        banner_next_round: "",
-        must_follow: "Вы должны сходить в масть: {sym}.",
-        must_trump: "Вы должны сыграть козырем ({sym}).",
-        you_won: "🎉 Вы победили!",
-        bot_won: "Бот победил.",
-        you_lost_try: "Вы проиграли — попробуйте ещё раз!",
-        play_again: "Сыграть снова",
-        close: "Закрыть"
+        title:"Муушик",
+        subtitle:"Быстрая и ловкая дуэль со взятками. Меняйтесь картами, подбирайте козыри и тяните козыри соперника!",
+        start:"Начать игру", player:"Игрок", bot:"Бот", dealer:"Дилер",
+        trump:"Козырь:", sfx:"Звук", themeDark:"Тёмная", themeLight:"Светлая",
+        swap:"Обмен", directPlay:"Играть немедленно", newGame:"Новая игра",
+        round:"Раунд {n}", trick:"Трюки {n}/5",
+        banner_starting:"Начинается новая игра…",
+        banner_swap_prompt:"Выберите от 1 до 5 карт и нажмите «Обмен».",
+        banner_pickup_prompt:"Выберите карту для сброса, затем нажмите на козырную карту.",
+        banner_bot_leads:"Бот начинает игру", banner_you_lead:"Ваш ход",
+        banner_bots_turn:"Ход бота", banner_your_turn:"Ваш ход",
+        banner_you_picked:"Вы взяли козырь {sym}", banner_bot_picked:"Бот взял козырь {sym}",
+        banner_next_round:"Следующий раунд…",
+        must_follow:"Вы должны сходить в масть: {sym}.",
+        must_trump:"Вы должны сыграть козырем ({sym}).",
+        you_won:"🎉 Вы победили!", bot_won:"Бот победил."
       }
     }
   };
-  function t(key, params={}){
-    const pack = i18n.dict[i18n.lang] || i18n.dict.en;
-    let s = pack[key] ?? i18n.dict.en[key] ?? key;
-    Object.entries(params).forEach(([k,v])=>{ s = s.replaceAll(`{${k}}`, v); });
-    return s;
-  }
-  function applyStaticI18n(){
-    document.querySelectorAll('[data-i18n]').forEach(el=>{
-      const key = el.getAttribute('data-i18n');
-      el.textContent = t(key);
-    });
-  }
-  function setLang(lang){
-    i18n.lang = lang;
-    localStorage.setItem('muusig_lang', lang);
-    applyStaticI18n();
-    // refresh overlay labels if open
-    if (document.getElementById('end-overlay').classList.contains('show')) {
-      document.getElementById('play-again-btn').textContent = t('play_again');
-      document.getElementById('close-overlay-btn').textContent = t('close');
-    }
-    updateHeaders();
-    banner(t('banner_starting'));
-  }
+  function t(key, params={}){ const pack=i18n.dict[i18n.lang]||i18n.dict.en; let s=pack[key]??i18n.dict.en[key]??key; for (const[k,v] of Object.entries(params)) s=s.replaceAll(`{${k}}`,v); return s; }
+  function applyStaticI18n(){ document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent=t(el.getAttribute('data-i18n')); }); }
+  function setLang(lang){ i18n.lang=lang; localStorage.setItem('muusig_lang',lang); applyStaticI18n(); updateHeaders(); banner(t('banner_starting')); }
 
   /* ---------- CONSTANTS / STATE ---------- */
   const RANKS = ['7','8','9','10','J','Q','K','A'];
@@ -537,12 +467,9 @@ document.addEventListener('DOMContentLoaded', () => {
     shuffle:new AudioSafe('sounds/shuffle.mp3'),
     flip : new AudioSafe('sounds/flip.mp3'),
     click: new AudioSafe('sounds/click.mp3'),
-    swap : new AudioSafe('sounds/swap.mp3'),
-    playPlayer: new AudioSafe('sounds/play_player.mp3'),
-    playBot   : new AudioSafe('sounds/play_bot.mp3'),
-    score: new AudioSafe('sounds/score.mp3')
+    score: new AudioSafe('sounds/score.mp3'),
+    play : new AudioSafe('sounds/play.mp3')
   };
-  const playSafe = a => a && typeof a.playSafe==='function' && a.playSafe();
 
   const state = {
     deck: [], playerHand: [], botHand: [],
@@ -589,20 +516,15 @@ document.addEventListener('DOMContentLoaded', () => {
     trickLabel: document.getElementById('trick-label')
   };
 
-  /* ---------- AUDIO SAFE WRAPPER ---------- */
   function AudioSafe(src){
-    const a = new Audio();
-    a.src = src; a.preload = 'auto';
+    const a = new Audio(); a.src = src; a.preload = 'auto';
     a.playSafe = () => {
       if (!SFX.enabled) return;
-      const p = a.cloneNode();
-      p.volume = 0.88;
-      p.play().catch(()=>{ /* ignore */ });
+      const p = a.cloneNode(); p.volume = 0.85; p.play().catch(()=>{});
     };
     return a;
   }
 
-  /* ---------- HELPERS / UI ---------- */
   function msg(s){ el.message.textContent=s; }
   function banner(s){ el.banner.textContent=s; }
   function sym(s){ return ({S:'♠',H:'♥',D:'♦',C:'♣'})[s]||s; }
@@ -616,17 +538,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const steps = Math.min(10, Math.abs(diff));
     let cur = 0;
     const tick = () => {
-      cur++;
-      elm.textContent = Math.round(from + diff * (cur/steps));
+      cur++; elm.textContent = Math.round(from + diff * (cur/steps));
       if (cur < steps){ requestAnimationFrame(tick); }
-      else { elm.classList.add('score-glow'); setTimeout(()=>elm.classList.remove('score-glow'), 650); playSafe(SFX.score); }
+      else { elm.classList.add('score-glow'); setTimeout(()=>elm.classList.remove('score-glow'), 650); SFX.score.playSafe(); }
     };
     requestAnimationFrame(tick);
   }
-  function updateScores(){
-    animateScore(el.pScore, state.playerScore);
-    animateScore(el.bScore, state.botScore);
-  }
+  function updateScores(){ animateScore(el.pScore, state.playerScore); animateScore(el.bScore, state.botScore); }
   function updateHeaders(){
     el.roundLabel.textContent = t('round', {n: state.round});
     el.trickLabel.textContent = t('trick', {n: Math.min(state.tricksPlayed+1,5)});
@@ -660,18 +578,14 @@ document.addEventListener('DOMContentLoaded', () => {
     el.trumpCard.style.display = 'block';
     el.trumpCard.style.filter = 'none';
   }
-  function hideTrumpCard(){
-    el.trumpCard.innerHTML = '';
-    el.trumpCard.style.backgroundImage = 'none';
-    el.trumpCard.style.display = 'none';
-  }
+  function hideTrumpCard(){ el.trumpCard.innerHTML=''; el.trumpCard.style.backgroundImage='none'; el.trumpCard.style.display='none'; }
   function revealTrump(){
     el.trumpCard.innerHTML=''; el.trumpCard.appendChild(createCard(state.trumpCard));
     el.trumpSym.textContent = sym(state.trumpSuit);
     el.trumpBadge.setAttribute('data-suit', state.trumpSuit);
     el.trumpCard.style.display='block';
     el.trumpCard.classList.remove('trump-flip'); void el.trumpCard.offsetWidth; el.trumpCard.classList.add('trump-flip');
-    playSafe(SFX.flip);
+    SFX.flip.playSafe();
   }
 
   function indexOfWeakest(hand, filter=()=>true){
@@ -698,127 +612,32 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function indexOfSpecific(hand, rank, suit){ for(let i=0;i<hand.length;i++) if(hand[i].rank===rank && hand[i].suit===suit) return i; return -1; }
 
-  /* ===== End-of-game Overlay + Confetti ===== */
-  const endUI = {
-    overlay: document.getElementById('end-overlay'),
-    title:   document.getElementById('end-title'),
-    sub:     document.getElementById('end-sub'),
-    again:   document.getElementById('play-again-btn'),
-    close:   document.getElementById('close-overlay-btn'),
-    confWrap:document.getElementById('confetti-wrap'),
-    confCan :document.getElementById('confetti')
-  };
-
-  let confettiRAF = null, confettiParticles = [];
-  function startConfetti(){
-    const c = endUI.confCan;
-    const ctx = c.getContext('2d');
-    const dpr = window.devicePixelRatio || 1;
-    c.width  = innerWidth * dpr;
-    c.height = innerHeight * dpr;
-    ctx.scale(dpr, dpr);
-
-    confettiParticles = Array.from({length: 180}, () => ({
-      x: Math.random()*innerWidth,
-      y: -20 - Math.random()*innerHeight*0.5,
-      r: 2 + Math.random()*4,
-      a: Math.random()*360,
-      vY: 1.2 + Math.random()*2.4,
-      vX: -1 + Math.random()*2,
-      color: `hsl(${Math.random()*360}, 90%, 60%)`
-    }));
-
-    function tick(){
-      ctx.clearRect(0,0,innerWidth,innerHeight);
-      confettiParticles.forEach(p=>{
-        p.y += p.vY; p.x += p.vX; p.a += 6;
-        if (p.y > innerHeight + 30) p.y = -20;
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.a * Math.PI/180);
-        ctx.fillStyle = p.color;
-        ctx.fillRect(-p.r, -p.r, p.r*2, p.r*2);
-        ctx.restore();
-      });
-      confettiRAF = requestAnimationFrame(tick);
-    }
-    tick();
-    endUI.confWrap.classList.add('show');
-  }
-  function stopConfetti(){
-    if (confettiRAF) cancelAnimationFrame(confettiRAF);
-    endUI.confWrap.classList.remove('show');
-  }
-
-  function showEndOverlay(winner){
-    // Localize buttons every time
-    endUI.again.textContent = t('play_again');
-    endUI.close.textContent = t('close');
-
-    if (winner === 'player'){
-      endUI.title.textContent = t('you_won');
-      endUI.sub.textContent   = t('banner_next_round');
-      startConfetti();
-    } else {
-      endUI.title.textContent = t('you_lost_try');
-      endUI.sub.textContent   = t('banner_starting');
-      stopConfetti();
-    }
-    endUI.overlay.classList.add('show');
-  }
-  function hideEndOverlay(){
-    endUI.overlay.classList.remove('show');
-    stopConfetti();
-  }
-  endUI.again.addEventListener('click', ()=>{
-    hideEndOverlay();
-    // Hard reset to a fresh game without welcome screen
-    Object.assign(state, { gameOver:false });
-    resetDeckAndTrumpUI();
-    state.round = 1; state.playerScore = 15; state.botScore = 15;
-    updateScores(); updateHeaders();
-    startRound();
-  });
-  endUI.close.addEventListener('click', hideEndOverlay);
-
   /* ----- THEME / SFX / START / LANG ----- */
-  el.theme.addEventListener('change', (e)=>{ document.body.classList.toggle('theme-light', e.target.value==='light'); });
-  el.sfxToggle.addEventListener('change', e=>{ SFX.enabled = e.target.checked; });
-  el.start.addEventListener('click', ()=>{
+  document.getElementById('theme-select').addEventListener('change', (e)=>{ document.body.classList.toggle('theme-light', e.target.value==='light'); });
+  document.getElementById('sfx-toggle').addEventListener('change', e=>{ SFX.enabled = e.target.checked; });
+  document.getElementById('start-game-btn').addEventListener('click', ()=>{
     document.body.classList.remove('showing-welcome');
-    playSafe(SFX.shuffle);
-    el.welcome.classList.add('hidden');
-    setTimeout(()=>{ el.welcome.style.display='none'; startNewGame(); }, 620);
+    SFX.shuffle.playSafe();
+    document.getElementById('welcome-screen').classList.add('hidden');
+    setTimeout(()=>{ document.getElementById('welcome-screen').style.display='none'; startNewGame(); }, 620);
   });
   document.getElementById('new-game-btn').addEventListener('click', ()=>{ location.reload(); });
-  el.lang.addEventListener('change', (e)=> setLang(e.target.value));
+  document.getElementById('lang-select').addEventListener('change', (e)=> setLang(e.target.value));
 
-  // Direct Play: skip swap (but preserve correct dealer pickup)
-  el.play.addEventListener('click', () => {
+  // Direct Play
+  document.getElementById('play-btn').addEventListener('click', () => {
     if (!state.swapPhase || state.pickupPhase || state.gameOver) return;
-
     state.selectedCards = [];
     [...el.playerHand.children].forEach(c => c.classList.remove('selected', 'to-discard'));
-    el.swap.disabled = true;
-    el.play.disabled = true;
-
+    el.swap.disabled = true; el.play.disabled = true;
     state.swapPhase = false;
-
-    if (state.dealer === 'bot') {
-      // Player skips swapping, bot picks up, then tricks
-      botPickup(startTricks);
-    } else {
-      // Player is dealer: still must choose a discard to pick up trump
-      startPickup();
-    }
+    if (state.dealer === 'bot') botPickup(startTricks);
+    else startPickup();
   });
 
-  // Initialize language select
   (function initLang(){
-    const saved = i18n.lang;
-    el.lang.value = saved;
-    applyStaticI18n();
-    banner(t('banner_starting'));
+    const saved = i18n.lang; document.getElementById('lang-select').value = saved;
+    applyStaticI18n(); banner(t('banner_starting'));
   })();
 
   /* ---------- GAME FLOW ---------- */
@@ -841,8 +660,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function startRound(){
     state.tricksPlayed=0; state.playerTricksThisRound=0; state.botTricksThisRound=0;
     state.currentTrick=[]; state.leadingSuit=null; state.selectedCards=[]; state.cardToDiscard=null;
-    state.pickupPhase=false; state.lastTrickWinner=null;
-    resetDeckAndTrumpUI();
+    state.pickupPhase=false; state.lastTrickWinner=null; resetDeckAndTrumpUI();
 
     el.play.disabled = true;
 
@@ -858,17 +676,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (state.dealer==='player'){
         setTimeout(()=>{
-          botSwap();
-          state.swapPhase = true;
-          msg(t('banner_swap_prompt'));
-          el.swap.disabled = true;
-          el.play.disabled = false; // allow Direct Play during player's swap prompt
+          botSwap(); state.swapPhase = true;
+          msg(t('banner_swap_prompt')); el.swap.disabled = true; el.play.disabled = false;
         }, 300);
       } else {
-        state.swapPhase = true;
-        msg(t('banner_swap_prompt'));
-        el.swap.disabled = true;
-        el.play.disabled = false;
+        state.swapPhase = true; msg(t('banner_swap_prompt'));
+        el.swap.disabled = true; el.play.disabled = false;
       }
     });
   }
@@ -876,11 +689,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function generateDeck(){ const suits=['S','H','D','C']; state.deck=[]; suits.forEach(s=>RANKS.forEach(r=>state.deck.push({rank:r,suit:s,code:r+s}))); }
   function shuffle(){ for(let i=state.deck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [state.deck[i],state.deck[j]]=[state.deck[j],state.deck[i]]; } }
 
-  /* ----- DEAL FROM THE STACK ----- */
   function deal5AnimatedFromDeck(done){
     state.playerHand=[]; state.botHand=[];
     el.playerHand.innerHTML=''; el.botHand.innerHTML='';
-
     const botElems=[], playerElems=[];
     for (let i=0;i<5;i++){
       const b=document.createElement('div'); b.className='card'; b.style.backgroundImage='var(--deck-img)'; b.style.opacity='0';
@@ -888,7 +699,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const p=document.createElement('div'); p.className='card'; p.style.opacity='0';
       el.playerHand.appendChild(p); playerElems.push(p);
     }
-
     const deckRect = el.deck.getBoundingClientRect();
     const launchX = deckRect.left + deckRect.width * 0.5;
     const launchY = deckRect.top  + deckRect.height * 0.22;
@@ -912,13 +722,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const pCard = state.deck.pop(); state.playerHand.push(pCard);
       playerElems[step].style.backgroundImage = `url('cards/${pCard.code}.png')`;
-      setFromVars(playerElems[step]); bumpStack(); playSafe(SFX.deal);
+      setFromVars(playerElems[step]); bumpStack(); SFX.deal.playSafe();
       playerElems[step].classList.add('deal-from-deck'); playerElems[step].style.opacity='1';
 
       const thisStep=step;
       const bCard = state.deck.pop(); state.botHand.push(bCard);
       setTimeout(()=>{
-        setFromVars(botElems[thisStep]); bumpStack(); playSafe(SFX.deal);
+        setFromVars(botElems[thisStep]); bumpStack(); SFX.deal.playSafe();
         botElems[thisStep].classList.add('deal-from-deck'); botElems[thisStep].style.opacity='1';
       }, 120);
 
@@ -928,29 +738,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ----- SWAP / PICKUP ----- */
-
-  // Player hand click: click sound only for swap/discard (NOT when playing a card)
   el.playerHand.addEventListener('click', (e)=>{
     if (state.gameOver) return;
     const cardEl=e.target.closest('.card'); if(!cardEl) return;
     const index=[...el.playerHand.children].indexOf(cardEl);
+    SFX.click.playSafe();
 
-    if (state.swapPhase){
-      playSafe(SFX.click);         // selection UI sound
-      toggleSwap(index);
-      el.swap.disabled = state.selectedCards.length===0;
-    }
-    else if (state.pickupPhase){
-      playSafe(SFX.click);         // choosing discard
-      selectDiscard(index);
-    }
-    else if (state.currentPlayer==='player'){
-      // Real play: no click here; play sound will fire inside playCard() on success
-      playCard(index);
-    }
+    if (state.swapPhase){ toggleSwap(index); el.swap.disabled = state.selectedCards.length===0; }
+    else if (state.pickupPhase){ selectDiscard(index); }
+    else if (state.currentPlayer==='player'){ playCard(index); }
   });
-
-  el.trumpCard.addEventListener('click', ()=>{ if (state.pickupPhase && state.cardToDiscard!==null){ playSafe(SFX.flip); pickupTrump(); } });
+  el.trumpCard.addEventListener('click', ()=>{ if (state.pickupPhase && state.cardToDiscard!==null){ SFX.flip.playSafe(); pickupTrump(); } });
   el.swap.addEventListener('click', ()=>{ if (state.swapPhase && state.selectedCards.length>0 && !state.pickupPhase) doSwap(); });
 
   function toggleSwap(i){
@@ -958,7 +756,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const at=state.selectedCards.indexOf(i);
     if(at===-1){ state.selectedCards.push(i); cardEl.classList.add('selected'); }
     else { state.selectedCards.splice(at,1); cardEl.classList.remove('selected'); }
-    playSafe(SFX.swap);
   }
   function selectDiscard(i){
     [...el.playerHand.children].forEach(c=>c.classList.remove('to-discard'));
@@ -973,11 +770,7 @@ document.addEventListener('DOMContentLoaded', () => {
     el.play.disabled = true;
     if (state.dealer==='player'){ startPickup(); } else { botSwap(); botPickup(()=>startTricks()); }
   }
-  function startPickup(){
-    state.pickupPhase=true;
-    el.play.disabled=true;
-    banner(t('banner_pickup_prompt'));
-  }
+  function startPickup(){ state.pickupPhase=true; el.play.disabled=true; banner(t('banner_pickup_prompt')); }
   function botSwap(){
     const nonTrumpsIdx = state.botHand
       .map((c,i)=>({i,val:RANK_VALUE[c.rank] + (c.suit===state.trumpSuit?10:0)}))
@@ -1038,32 +831,18 @@ document.addEventListener('DOMContentLoaded', () => {
   function playCard(i){
     if (state.currentPlayer!=='player') return;
     const card=state.playerHand[i];
-
-    // Illegal attempt => show message + click feedback; return
     if (!playerMoveIsLegalCard(card)){
       const lead = state.currentTrick[0]?.card;
       if (lead){
         const canFollow=state.playerHand.some(c=>c.suit===lead.suit);
-        if (canFollow && card.suit!==lead.suit){
-          msg(t('must_follow',{sym:sym(lead.suit)}));
-          playSafe(SFX.click);
-          return;
-        }
+        if (canFollow && card.suit!==lead.suit){ msg(`You must follow suit: ${suitName(lead.suit)}.`); return; }
         const hasTrump=state.playerHand.some(c=>c.suit===state.trumpSuit);
-        if (!canFollow && hasTrump && card.suit!==state.trumpSuit){
-          msg(t('must_trump',{sym:sym(state.trumpSuit)}));
-          playSafe(SFX.click);
-          return;
-        }
+        if (!canFollow && hasTrump && card.suit!==state.trumpSuit){ msg(`You must play a trump (${sym(state.trumpSuit)}).`); return; }
       }
     }
-
-    // Legal play (no click): thud only
     msg('');
     state.playerHand.splice(i,1);
     state.currentTrick.push({card, player:'player'});
-    playSafe(SFX.playPlayer);
-
     renderHands(false); renderTrick();
 
     if (state.currentTrick.length===1){
@@ -1077,10 +856,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function botPlay(){
     if (state.currentPlayer!=='bot') return;
-
     let idx=-1;
     if (state.currentTrick.length===0){
-      // Lead: trump Ace first if present
       const aIdx = indexOfSpecific(state.botHand,'A',state.trumpSuit);
       if (aIdx!==-1) idx=aIdx;
       else{
@@ -1108,10 +885,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (idx<0) idx=0;
     const card=state.botHand.splice(idx,1)[0];
     state.currentTrick.push({card, player:'bot'});
-
-    // Delayed bot play sound (guarded)
-    setTimeout(()=> playSafe(SFX.playBot), 200);
-
     renderHands(false); renderTrick();
 
     if (state.currentTrick.length===2) setTimeout(resolveTrick, 400);
@@ -1129,7 +902,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function resolveTrick(){
     [...document.getElementById('played-cards').children].forEach(child => child.classList.add('trick-out'));
-
     const winner = determineWinner();
     state.lastTrickWinner = winner;
     if (winner==='player') state.playerTricksThisRound++; else state.botTricksThisRound++;
@@ -1137,9 +909,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setTimeout(()=>{
       state.currentTrick=[]; renderTrick();
-
       if (state.tricksPlayed>=5){ scoreRound(); return; }
-
       state.currentPlayer = winner;
       if (winner==='bot'){ banner(`${t('banner_bot_leads')}`); setTimeout(()=>botPlay(), 600); }
       else { banner(t('banner_you_lead')); renderHands(true); }
@@ -1158,17 +928,14 @@ document.addEventListener('DOMContentLoaded', () => {
     updateScores();
 
     if (state.playerScore<=0 || state.botScore<=0){
-      state.gameOver = true;
-      // Show localized overlay with confetti for player win
-      showEndOverlay(state.playerScore<=0 ? 'player' : 'bot');
-      return;
+      banner(state.playerScore<=0 ? t('you_won') : t('bot_won'));
+      state.gameOver=true; return;
     }
 
-    resetDeckAndTrumpUI(); // deck slides back for the new round
+    resetDeckAndTrumpUI();
     state.round++; banner(t('banner_next_round')); setTimeout(startRound, 900);
   }
 
-  /* ====== INIT ====== */
   applyStaticI18n();
 });
 </script>
