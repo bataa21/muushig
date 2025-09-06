@@ -379,6 +379,15 @@
 @media (max-width: 340px){
   #player-hand, #bot-hand{ flex-wrap: nowrap; }
 }
+/* Kill the ghost in light mode */
+.theme-light .card{
+  background-color: transparent !important;        /* or rgba(0,0,0,.02) if you want the tiniest tint */
+  box-shadow: 0 6px 14px rgba(0,0,0,.18);          /* softer shadow on light bg (optional) */
+}
+
+/* If you want it gone in both themes: */
+.card{ background-color: transparent; }
+.theme-light .card{ background-color: transparent !important; }
 
 </style>
 </head>
@@ -557,6 +566,19 @@ const i18n = {
   /* ---------- CONSTANTS / STATE ---------- */
   const RANKS = ['7','8','9','10','J','Q','K','A'];
   const RANK_VALUE = Object.fromEntries(RANKS.map((r,i)=>[r,i]));
+  const SUITS = ['S','H','D','C'];
+const CARD_URLS = SUITS.flatMap(s => RANKS.map(r => `cards/${r}${s}.png`)).concat('cards/back.png');
+  // Simple preloader
+function preloadImages(urls){
+  return Promise.all(urls.map(src => new Promise(res => {
+    const img = new Image();
+    img.onload = img.onerror = res;
+    img.src = src;
+  })));
+}
+
+// Start preloading ASAP (so the user isn’t kept waiting later)
+const preloadPromise = preloadImages(CARD_URLS);
   const SFX = {
     enabled: true,
     deal : new AudioSafe('sounds/deal.mp3'),
@@ -712,12 +734,21 @@ const i18n = {
   /* ----- THEME / SFX / START / LANG ----- */
   document.getElementById('theme-select').addEventListener('change', (e)=>{ document.body.classList.toggle('theme-light', e.target.value==='light'); });
   document.getElementById('sfx-toggle').addEventListener('change', e=>{ SFX.enabled = e.target.checked; });
-  document.getElementById('start-game-btn').addEventListener('click', ()=>{
-    document.body.classList.remove('showing-welcome');
-    
-    document.getElementById('welcome-screen').classList.add('hidden');
-    setTimeout(()=>{ document.getElementById('welcome-screen').style.display='none'; startNewGame(); }, 620);
-  });
+  
+  document.getElementById('start-game-btn').addEventListener('click', async () => {
+  document.body.classList.remove('showing-welcome');
+  document.getElementById('welcome-screen').classList.add('hidden');
+
+  // Wait for both: fade-out (620ms) and image preloading
+  await Promise.all([
+    preloadPromise,
+    new Promise(r => setTimeout(r, 620))
+  ]);
+
+  document.getElementById('welcome-screen').style.display = 'none';
+  startNewGame();
+});
+
   document.getElementById('new-game-btn').addEventListener('click', ()=>{ location.reload(); });
   document.getElementById('lang-select').addEventListener('change', (e)=> setLang(e.target.value));
 
@@ -1053,6 +1084,7 @@ const i18n = {
 </script>
 </body>
 </html>
+
 
 
 
