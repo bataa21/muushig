@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta charset='utf-8' />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
 <title>Muusig Card Game</title>
 <style>
   :root{
@@ -125,12 +126,19 @@
     background-size:contain; background-repeat:no-repeat; background-position:center;
     z-index:2; user-select:none; pointer-events:none; opacity:.98;
     transition: transform .12s ease; filter:none; box-shadow:none;
+     -webkit-user-select:none;user-select:none; 
   }
   #deck::before, #deck::after{
     content:""; position:absolute; inset:0; border-radius:10px;
     background-image:var(--deck-img); background-size:contain; background-repeat:no-repeat; background-position:center;
     will-change: transform, opacity; filter:none;
   }
+  .card, #deck {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+
   #deck::before{ transform: translate(4px, 4px) rotate(.4deg); opacity:1 }
   #deck::after { transform: translate(8px, 8px) rotate(.8deg); opacity:1 }
   #deck.deck-pop{ transform: translateX(-50%) translateY(-6px) }
@@ -299,6 +307,11 @@
   @supports (padding: max(0px)){
     body{ padding-top: calc(16px + env(safe-area-inset-top, 0px)); }
   }
+  .visually-hidden{
+  position:absolute!important; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+}
+
 </style>
 </head>
 <body class="showing-welcome">
@@ -307,7 +320,7 @@
   <div id="welcome-screen" class="welcome-screen">
     <div class="welcome-card">
       <h1 data-i18n="title">Muusig</h1>
-      <p class="sub" data-i18n="subtitle">A slick, fast trick-taking duel. Swap, pick up trump, and pull the other player’s trumps!</p>
+      <p class="sub" data-i18n="subtitle">A slick, fast trick-taking duel. Swap, pick up trump, and pull the other player's trumps!</p>
       <div class="card-preview">
         <div class="preview-card" style="background-image:url('cards/AS.png')"></div>
         <div class="preview-card" style="background-image:url('cards/KD.png')"></div>
@@ -338,15 +351,19 @@
         <input id="sfx-toggle" type="checkbox" checked />
         <span data-i18n="sfx">SFX</span>
       </label>
-      <select id="theme-select" class="select">
-        <option value="dark" data-i18n="themeDark">Dark</option>
-        <option value="light" data-i18n="themeLight">Light</option>
-      </select>
-      <select id="lang-select" class="select" title="Language">
-        <option value="en">EN</option>
-        <option value="mn">MN</option>
-        <option value="ru">RU</option>
-      </select>
+     <label for="theme-select" class="visually-hidden">Theme</label>
+<select id="theme-select" class="select" aria-label="Theme" title="Theme">
+  <option value="dark" data-i18n="themeDark">Dark</option>
+  <option value="light" data-i18n="themeLight">Light</option>
+</select>
+
+<label for="lang-select" class="visually-hidden">Language</label>
+<select id="lang-select" class="select" aria-label="Language" title="Language">
+  <option value="en">EN</option>
+  <option value="mn">MN</option>
+  <option value="ru">RU</option>
+</select>
+
     </div>
   </div>
 
@@ -387,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
     dict: {
       en: {
         title: "Muusig",
-        subtitle: "A slick, fast trick-taking duel. Swap, pick up trump, and pull the other player’s trumps!",
+        subtitle: "A slick, fast trick-taking duel. Swap, pick up trump, and pull the other player's trumps!",
         start: "Start Game",
         player: "Player",
         bot: "Bot",
@@ -464,11 +481,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const SFX = {
     enabled: true,
     deal : new AudioSafe('sounds/deal.mp3'),
-    shuffle:new AudioSafe('sounds/shuffle.mp3'),
     flip : new AudioSafe('sounds/flip.mp3'),
     click: new AudioSafe('sounds/click.mp3'),
     score: new AudioSafe('sounds/score.mp3'),
-    play : new AudioSafe('sounds/play.mp3')
+    play : new AudioSafe('sounds/bot_play.mp3'),  // Fixed filename
+    swap : new AudioSafe('sounds/swap.mp3'),      // Added swap sound
+    playerPlay: new AudioSafe('sounds/player_play.mp3')  // Added player play sound
   };
 
   const state = {
@@ -602,7 +620,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function indexOfBestFollow(hand, lead){
     let idx=-1, best=1e9;
     hand.forEach((c,i)=>{ if(c.suit!==lead.suit)return; if(RANK_VALUE[c.rank]>RANK_VALUE[lead.rank] && RANK_VALUE[c.rank]<best){best=RANK_VALUE[c.rank]; idx=i;} });
-    return (idx!==-1)?idx:indexOfWeakest(hand, c=>c.suit===lead.suit);
+    return (idx!=-1)?idx:indexOfWeakest(hand, c=>c.suit===lead.suit);
   }
   function hasVeryStrongTrumps(hand){ return hand.filter(c=>c.suit===state.trumpSuit && ['A','K','Q'].includes(c.rank)).length>=2; }
   function indexOfLowestWinningTrump(hand, lead){
@@ -617,7 +635,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('sfx-toggle').addEventListener('change', e=>{ SFX.enabled = e.target.checked; });
   document.getElementById('start-game-btn').addEventListener('click', ()=>{
     document.body.classList.remove('showing-welcome');
-    SFX.shuffle.playSafe();
+    
     document.getElementById('welcome-screen').classList.add('hidden');
     setTimeout(()=>{ document.getElementById('welcome-screen').style.display='none'; startNewGame(); }, 620);
   });
@@ -625,15 +643,17 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('lang-select').addEventListener('change', (e)=> setLang(e.target.value));
 
   // Direct Play
-  document.getElementById('play-btn').addEventListener('click', () => {
-    if (!state.swapPhase || state.pickupPhase || state.gameOver) return;
-    state.selectedCards = [];
-    [...el.playerHand.children].forEach(c => c.classList.remove('selected', 'to-discard'));
-    el.swap.disabled = true; el.play.disabled = true;
-    state.swapPhase = false;
-    if (state.dealer === 'bot') botPickup(startTricks);
-    else startPickup();
-  });
+ document.getElementById('play-btn').addEventListener('click', () => {
+  if (!state.swapPhase || state.pickupPhase || state.gameOver) return;
+  state.selectedCards = [];
+  [...el.playerHand.children].forEach(c => c.classList.remove('selected', 'to-discard'));
+  el.swap.disabled = true; el.play.disabled = true;
+  state.swapPhase = false;
+  msg(''); // ← clear swap prompt immediately
+  if (state.dealer === 'bot') botPickup(startTricks);
+  else startPickup();
+});
+
 
   (function initLang(){
     const saved = i18n.lang; document.getElementById('lang-select').value = saved;
@@ -664,7 +684,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     el.play.disabled = true;
 
-    state.dealer = (state.round===1) ? (Math.random()<.5?'player':'bot') : (state.dealer==='player'?'bot':'player');
+    state.dealer = (state.round===1) ? (Math.random()<0.5?'player':'bot') : (state.dealer==='player'?'bot':'player');
     document.getElementById('player-dealer').style.display = state.dealer==='player' ? 'inline-flex' : 'none';
     document.getElementById('bot-dealer').style.display = state.dealer==='bot' ? 'inline-flex' : 'none';
 
@@ -763,13 +783,17 @@ document.addEventListener('DOMContentLoaded', () => {
     banner(t('banner_pickup_prompt'));
   }
   function doSwap(){
-    state.selectedCards.sort((a,b)=>b-a);
-    const out=[]; state.selectedCards.forEach(i=> out.push(state.playerHand.splice(i,1)[0]));
-    for(let i=0;i<out.length;i++) state.playerHand.push(state.deck.pop());
-    state.selectedCards=[]; state.swapPhase=false; renderHands();
-    el.play.disabled = true;
-    if (state.dealer==='player'){ startPickup(); } else { botSwap(); botPickup(()=>startTricks()); }
-  }
+  state.selectedCards.sort((a,b)=>b-a);
+  const out=[]; state.selectedCards.forEach(i=> out.push(state.playerHand.splice(i,1)[0]));
+  for(let i=0;i<out.length;i++) state.playerHand.push(state.deck.pop());
+  state.selectedCards=[]; state.swapPhase=false; renderHands();
+  msg(''); // ← clear swap prompt after swapping
+  el.play.disabled = true;
+  // Play swap sound
+  SFX.swap.playSafe();
+  if (state.dealer==='player'){ startPickup(); } else { botSwap(); botPickup(()=>startTricks()); }
+}
+
   function startPickup(){ state.pickupPhase=true; el.play.disabled=true; banner(t('banner_pickup_prompt')); }
   function botSwap(){
     const nonTrumpsIdx = state.botHand
@@ -844,6 +868,9 @@ document.addEventListener('DOMContentLoaded', () => {
     state.playerHand.splice(i,1);
     state.currentTrick.push({card, player:'player'});
     renderHands(false); renderTrick();
+    
+    // Play player play sound
+    SFX.playerPlay.playSafe();
 
     if (state.currentTrick.length===1){
       state.leadingSuit=card.suit;
@@ -886,6 +913,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const card=state.botHand.splice(idx,1)[0];
     state.currentTrick.push({card, player:'bot'});
     renderHands(false); renderTrick();
+    
+    // Play bot play sound
+    SFX.play.playSafe();
 
     if (state.currentTrick.length===2) setTimeout(resolveTrick, 400);
     else { state.currentPlayer='player'; banner(t('banner_your_turn')); renderHands(true); }
