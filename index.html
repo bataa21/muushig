@@ -387,9 +387,10 @@
 
 /* If you want it gone in both themes: */
 .card{ background-color: transparent; }
-/* Light mode: keep transparent bg (no ghost), but DO NOT override box-shadow directly */
-.theme-light { --card-shadow: 0 6px 14px rgba(0,0,0,.18); }  /* lighter base shadow */
-.theme-light .card { background-color: transparent !important; }
+.theme-light .card.selected   { box-shadow: 0 0 0 3px rgba(245,158,11,.85), var(--card-shadow); }
+.theme-light .card.to-discard { box-shadow: 0 0 0 3px rgba(239,68,68,.90), var(--card-shadow); }
+.theme-light .card.legal      { box-shadow: 0 0 0 3px rgba(56,189,248,.90), var(--card-shadow); }
+
 
 </style>
 </head>
@@ -1086,6 +1087,7 @@ const preloadPromise = preloadImages(CARD_URLS);
 </script>
 </body>
 </html>
+
 
 
 
