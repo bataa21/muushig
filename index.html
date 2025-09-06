@@ -467,9 +467,13 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   /* ---------- I18N ---------- */
-  const i18n = {
-    lang: localStorage.getItem('muusig_lang') || 'en',
-    dict: {
+  const storedLang = localStorage.getItem('muusig_lang');
+const initialLang = storedLang || 'mn';          // default to Mongolian
+if (!storedLang) localStorage.setItem('muusig_lang', 'mn');
+
+const i18n = {
+  lang: initialLang,
+  dict: {
       en: {
         title: "Muusig",
         subtitle: "A slick, fast trick-taking duel. Swap, pick up trump, and pull the other player's trumps!",
@@ -541,7 +545,14 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   function t(key, params={}){ const pack=i18n.dict[i18n.lang]||i18n.dict.en; let s=pack[key]??i18n.dict.en[key]??key; for (const[k,v] of Object.entries(params)) s=s.replaceAll(`{${k}}`,v); return s; }
   function applyStaticI18n(){ document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent=t(el.getAttribute('data-i18n')); }); }
-  function setLang(lang){ i18n.lang=lang; localStorage.setItem('muusig_lang',lang); applyStaticI18n(); updateHeaders(); banner(t('banner_starting')); }
+ function setLang(lang){
+  i18n.lang = lang;
+  localStorage.setItem('muusig_lang', lang);
+  document.documentElement.lang = lang;   // <-- add this
+  applyStaticI18n();
+  updateHeaders();
+  banner(t('banner_starting'));
+}
 
   /* ---------- CONSTANTS / STATE ---------- */
   const RANKS = ['7','8','9','10','J','Q','K','A'];
@@ -723,10 +734,13 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-  (function initLang(){
-    const saved = i18n.lang; document.getElementById('lang-select').value = saved;
-    applyStaticI18n(); banner(t('banner_starting'));
-  })();
+ (function initLang(){
+  const saved = i18n.lang;
+  document.getElementById('lang-select').value = saved;
+  document.documentElement.lang = saved;   // <-- add this
+  applyStaticI18n();
+  banner(t('banner_starting'));
+})();
 
   /* ---------- GAME FLOW ---------- */
   function startNewGame(){
@@ -1039,5 +1053,6 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
