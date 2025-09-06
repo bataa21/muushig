@@ -352,30 +352,32 @@
                 order: 2;
             }
         }
-/* --- iOS-safe: keep 5-in-a-row, no wrapping --- */
-#player-hand, #bot-hand { flex-wrap: nowrap !important; }
-
-/* Compute card size from the row width (no hard pixel width). 
-   Uses the row's own width, so it works in Safari/Messenger. */
-#player-area, #bot-area { width: 100%; }
-#player-hand, #bot-hand { --cards: 5; --g: 8px; width: 100%; }
+/* iphone 13 Keep exactly 5 per row; shrink on small screens, NEVER grow past --card-width */
+#player-hand, #bot-hand{
+  flex-wrap: nowrap !important;
+  --cards: 5;
+  --gap: 12px;          /* desktop gap */
+  width: 100%;
+  justify-content: center;
+}
 
 #player-hand .card,
 #bot-hand .card{
-  /* fit 5 cards + 4 gaps exactly */
-  width: calc((100% - (var(--g) * (var(--cards) - 1))) / var(--cards));
-  aspect-ratio: 78 / 117;              /* keeps card proportions */
-  height: auto;                         /* driven by aspect ratio */
-  flex: 0 0 auto;                       /* prevent flex stretching */
+  /* cap at --card-width, otherwise fit 5 + gaps */
+  width: min(var(--card-width),
+             calc((100% - (var(--gap) * (var(--cards) - 1))) / var(--cards)));
+  aspect-ratio: 78 / 117;
+  height: auto;
+  flex: 0 0 auto;
 }
 
-/* Match your smaller-gap breakpoints */
-@media (max-width: 540px){ #player-hand, #bot-hand{ --g:6px; } }
-@media (max-width: 450px){ #player-hand, #bot-hand{ --g:4px; } }
+/* tighter gaps on smaller viewports */
+@media (max-width: 540px){ #player-hand, #bot-hand{ --gap: 8px; } }
+@media (max-width: 450px){ #player-hand, #bot-hand{ --gap: 6px; } }
 
-/* Remove the wrap-on-very-small rule that caused 4+1 */
+/* ensure we never wrap on ultra-small screens either */
 @media (max-width: 340px){
-  #player-hand, #bot-hand{ flex-wrap: nowrap; }   /* never wrap */
+  #player-hand, #bot-hand{ flex-wrap: nowrap; }
 }
 
 </style>
@@ -1037,4 +1039,5 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
